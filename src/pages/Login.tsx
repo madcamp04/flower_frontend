@@ -13,9 +13,15 @@ const Login = () => {
 
   const handleLogin = () => {
     // Dummy authentication logic
-    if ((id === 'test' && password === 'password')) {
-      Cookies.set('authToken', 'dummyAuthToken', { expires: autoLogin ? 7 : 1 }); // Set cookie to expire in 1 day or 7 days
+    if (id === 'test' && password === 'password') {
+      const userName = id;
+      const userToken = 'dummyAuthToken'; // This should come from the backend
+
+      // Set cookies
+      Cookies.set('authToken', userToken, { expires: autoLogin ? 7 : 1 });
       Cookies.set('autoLogin', autoLogin.toString());
+      Cookies.set('userName', userName, { expires: autoLogin ? 7 : 1 });
+
       navigate(from, { replace: true });
     } else {
       alert('Invalid credentials');
@@ -29,9 +35,15 @@ const Login = () => {
     // }).then(response => response.json())
     //   .then(data => {
     //     if (data.success) {
-    //       Cookies.set('authToken', data.token, { expires: autoLogin ? 7 : 1 });
+    //       const userName = data.user_name;
+    //       const userToken = data.user_token;
+
+    //       // Set cookies
+    //       Cookies.set('authToken', userToken, { expires: autoLogin ? 7 : 1 });
     //       Cookies.set('autoLogin', autoLogin.toString());
-    //       navigate('/main');
+    //       Cookies.set('userName', userName, { expires: autoLogin ? 7 : 1 });
+
+    //       navigate(from, { replace: true });
     //     } else {
     //       alert('Invalid credentials');
     //     }

@@ -5,6 +5,17 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import MainBusinessPage from './pages/MainBusinessPage';
 
+const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
+  const authToken = Cookies.get('authToken');
+  const autoLogin = Cookies.get('autoLogin') === 'true';
+
+  if (!authToken && !autoLogin) {
+    return <Navigate to="/login" />;
+  }
+
+  return children;
+};
+
 const App = () => {
   const navigate = useNavigate();
 
@@ -31,17 +42,6 @@ const App = () => {
       <Route path="/" element={<Navigate to="/login" />} />
     </Routes>
   );
-};
-
-const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
-  const authToken = Cookies.get('authToken');
-  const autoLogin = Cookies.get('autoLogin') === 'true';
-
-  if (!authToken && !autoLogin) {
-    return <Navigate to="/login" />;
-  }
-
-  return children;
 };
 
 export default App;
