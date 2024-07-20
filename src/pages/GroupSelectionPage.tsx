@@ -30,7 +30,7 @@ interface Group {
 
 const GroupSelectionPage = () => {
   const [userName, setUserName] = useState<string>('');
-  const [userToken, setUserToken] = useState<string>('');
+  const [sessionId, setSessionId] = useState<string>('');
   const [groups, setGroups] = useState<Group[]>([]);
   const [open, setOpen] = useState<boolean>(false);
   const [newGroupName, setNewGroupName] = useState<string>('');
@@ -40,17 +40,17 @@ const GroupSelectionPage = () => {
 
   useEffect(() => {
     const userName = Cookies.get('userName');
-    const userToken = Cookies.get('authToken');
-    if (!userName || !userToken) {
+    const sessionId = Cookies.get('session_id');
+    if (!userName || !sessionId) {
       navigate('/login');
     } else {
       setUserName(userName);
-      setUserToken(userToken);
-      fetchGroups(userName, userToken);
+      setSessionId(sessionId);
+      fetchGroups(userName, sessionId);
     }
   }, [navigate]);
 
-  const fetchGroups = (userName: string, userToken: string) => {
+  const fetchGroups = (userName: string, sessionId: string) => {
     // Dummy data
     const dummyGroups: Group[] = [
       { group_id: 1, group_name: 'Group 1', owner_user_id: 1, user_id: 1, writable: true, user_name: 'Owner 1' },
@@ -66,7 +66,7 @@ const GroupSelectionPage = () => {
     // fetch('https://your-backend-api.com/groups', {
     //   method: 'POST',
     //   headers: { 'Content-Type': 'application/json' },
-    //   body: JSON.stringify({ user_name: userName, user_token: userToken })
+    //   body: JSON.stringify({ user_name: userName, session_id: sessionId })
     // }).then(response => response.json())
     //   .then(data => {
     //     const sortedGroups = data.groups.sort((a, b) => (b.writable ? 1 : 0) - (a.writable ? 1 : 0));
@@ -75,8 +75,6 @@ const GroupSelectionPage = () => {
   };
 
   const handleGroupClick = (group: Group) => {
-    console.log(group.group_id)
-    console.log("/group/"+group.group_id);
     navigate(`/group/${group.group_id}`, { state: { group_name: group.group_name, owner_name: group.user_name, user_name: userName } });
   };
 
@@ -105,7 +103,7 @@ const GroupSelectionPage = () => {
     // fetch('https://your-backend-api.com/add-group', {
     //   method: 'POST',
     //   headers: { 'Content-Type': 'application/json' },
-    //   body: JSON.stringify({ user_name: userName, user_token: userToken, group_name: newGroupName, owner_user_name: newGroupOwner })
+    //   body: JSON.stringify({ user_name: userName, session_id: sessionId, group_name: newGroupName, owner_user_name: newGroupOwner })
     // }).then(response => response.json())
     //   .then(data => {
     //     setGroups([...groups, data.newGroup]);
@@ -114,7 +112,7 @@ const GroupSelectionPage = () => {
   };
 
   const handleLogout = () => {
-    Cookies.remove('authToken');
+    Cookies.remove('session_id');
     Cookies.remove('autoLogin');
     Cookies.remove('userName');
     navigate('/login');

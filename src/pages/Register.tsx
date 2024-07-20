@@ -27,38 +27,70 @@ const Register = () => {
     return '';
   };
 
-  const checkUniqueness = () => {
-    // Dummy uniqueness check
+  const checkIdUniqueness = () => {
+    // Dummy uniqueness check for ID
     let idError = '';
-    let emailError = '';
 
     if (id === 'existingUser') {
       idError = 'ID already exists';
     }
 
+    if (idError) {
+      setErrors((prevErrors) => ({ ...prevErrors, id: idError }));
+      setUniqueCheck((prevCheck) => ({ ...prevCheck, id: false }));
+    } else {
+      setErrors((prevErrors) => ({ ...prevErrors, id: '' }));
+      setUniqueCheck((prevCheck) => ({ ...prevCheck, id: true }));
+      alert('ID is unique');
+    }
+
+    // Backend call example (commented out)
+    // fetch('https://your-backend-api.com/api/login/check-username', {
+    //   method: 'POST',
+    //   headers: { 'Content-Type': 'application/json' },
+    //   body: JSON.stringify({ username: id })
+    // }).then(response => response.json())
+    //   .then(data => {
+    //     if (data.is_unique) {
+    //       setUniqueCheck((prevCheck) => ({ ...prevCheck, id: true }));
+    //       alert('ID is unique');
+    //     } else {
+    //       setErrors((prevErrors) => ({ ...prevErrors, id: 'ID already exists' }));
+    //       setUniqueCheck((prevCheck) => ({ ...prevCheck, id: false }));
+    //     }
+    //   });
+  };
+
+  const checkEmailUniqueness = () => {
+    // Dummy uniqueness check for Email
+    let emailError = '';
+
     if (email === 'existing@example.com') {
       emailError = 'Email already exists';
     }
 
-    if (idError || emailError) {
-      setErrors((prevErrors) => ({ ...prevErrors, id: idError, email: emailError }));
+    if (emailError) {
+      setErrors((prevErrors) => ({ ...prevErrors, email: emailError }));
+      setUniqueCheck((prevCheck) => ({ ...prevCheck, email: false }));
     } else {
-      setUniqueCheck({ id: true, email: true });
-      alert('ID and Email are unique');
+      setErrors((prevErrors) => ({ ...prevErrors, email: '' }));
+      setUniqueCheck((prevCheck) => ({ ...prevCheck, email: true }));
+      alert('Email is unique');
     }
 
     // Backend call example (commented out)
-    // fetch('https://your-backend-api.com/check-uniqueness', {
+    // fetch('https://your-backend-api.com/api/login/check-email', {
     //   method: 'POST',
     //   headers: { 'Content-Type': 'application/json' },
-    //   body: JSON.stringify({ id, email })
+    //   body: JSON.stringify({ email: email })
     // }).then(response => response.json())
     //   .then(data => {
-    //     if (data.success) {
-    //       setUniqueCheck({ id: true, email: true });
-    //       alert('ID and Email are unique');
+    //     if (data.is_unique) {
+    //       setUniqueCheck((prevCheck) => ({ ...prevCheck, email: true }));
+    //       alert('Email is unique');
     //     } else {
-    //       setErrors((prevErrors) => ({ ...prevErrors, id: data.idError, email: data.emailError }));
+    //       setErrors((prevErrors) => ({ ...prevErrors, email: 'Email already exists' }));
+    //       setUniqueCheck((prevCheck) => ({ ...prevCheck, email: false }));
     //     }
     //   });
   };
@@ -90,10 +122,10 @@ const Register = () => {
     navigate('/login');
 
     // Backend call example (commented out)
-    // fetch('https://your-backend-api.com/register', {
+    // fetch('https://your-backend-api.com/api/login/register', {
     //   method: 'POST',
     //   headers: { 'Content-Type': 'application/json' },
-    //   body: JSON.stringify({ id, email, password })
+    //   body: JSON.stringify({ username: id, email, password })
     // }).then(response => response.json())
     //   .then(data => {
     //     if (data.success) {
@@ -127,6 +159,9 @@ const Register = () => {
           error={!!errors.id}
           helperText={errors.id}
         />
+        <Button variant="contained" color="primary" fullWidth onClick={checkIdUniqueness}>
+          Check ID Uniqueness
+        </Button>
         <TextField
           label="Email"
           type="email"
@@ -138,8 +173,8 @@ const Register = () => {
           error={!!errors.email}
           helperText={errors.email}
         />
-        <Button variant="contained" color="primary" fullWidth onClick={checkUniqueness}>
-          Check Uniqueness
+        <Button variant="contained" color="primary" fullWidth onClick={checkEmailUniqueness}>
+          Check Email Uniqueness
         </Button>
         <TextField
           label="Password"

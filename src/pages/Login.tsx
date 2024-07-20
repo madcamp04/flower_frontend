@@ -14,7 +14,8 @@ const Login = () => {
   const handleLogin = () => {
     // Dummy authentication logic
     if (id === 'test' && password === 'password') {
-      Cookies.set('authToken', 'dummyAuthToken', { expires: autoLogin ? 7 : 1 }); // Set cookie to expire in 1 day or 7 days
+      const dummySessionId = 'dummySessionId123'; // Dummy session ID
+      Cookies.set('session_id', dummySessionId, { expires: autoLogin ? 7 : 1 }); // Set cookie to expire in 1 day or 7 days
       Cookies.set('autoLogin', autoLogin.toString());
       Cookies.set('userName', id); // Assuming the username is the ID
       navigate(from, { replace: true });
@@ -30,7 +31,7 @@ const Login = () => {
     // }).then(response => response.json())
     //   .then(data => {
     //     if (data.success) {
-    //       Cookies.set('authToken', data.token, { expires: autoLogin ? 7 : 1 });
+    //       Cookies.set('session_id', data.session_id, { expires: autoLogin ? 7 : 1 });
     //       Cookies.set('autoLogin', autoLogin.toString());
     //       navigate('/group-selection');
     //     } else {

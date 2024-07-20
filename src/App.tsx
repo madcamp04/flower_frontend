@@ -7,10 +7,10 @@ import GroupSelectionPage from './pages/GroupSelectionPage';
 import GroupViewPage from './pages/GroupViewPage';
 
 const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
-  const authToken = Cookies.get('authToken');
+  const sessionId = Cookies.get('session_id');
   const autoLogin = Cookies.get('autoLogin') === 'true';
 
-  if (!authToken && !autoLogin) {
+  if (!sessionId && !autoLogin) {
     return <Navigate to="/login" />;
   }
 
@@ -23,10 +23,33 @@ const App = () => {
 
   useEffect(() => {
     if (!initialCheckDone) {
-      const authToken = Cookies.get('authToken');
+      const sessionId = Cookies.get('session_id');
       const autoLogin = Cookies.get('autoLogin') === 'true';
-      if (authToken || autoLogin) {
-        navigate('/group-selection');
+      if (sessionId || autoLogin) {
+        console.log("asdf");
+        // Dummy auto-login logic
+        const dummyResponse = { success: true, session_id: sessionId || 'dummySessionId123' };
+        if (dummyResponse.success && dummyResponse.session_id) {
+          Cookies.set('session_id', dummyResponse.session_id, { expires: 7 });
+          navigate('/group-selection');
+        } else {
+          navigate('/login');
+        }
+
+        // Backend call example (commented out)
+        // fetch('https://your-backend-api.com/api/login/auto-login', {
+        //   method: 'POST',
+        //   headers: { 'Content-Type': 'application/json' },
+        //   body: JSON.stringify({ session_id: sessionId })
+        // }).then(response => response.json())
+        //   .then(data => {
+        //     if (data.success) {
+        //       Cookies.set('session_id', data.session_id, { expires: 7 });
+        //       navigate('/group-selection');
+        //     } else {
+        //       navigate('/login');
+        //     }
+        //   });
       }
       setInitialCheckDone(true);
     }

@@ -20,14 +20,14 @@ const GroupViewPage = () => {
   } = (location.state || {}) as LocationState;
 
   useEffect(() => {
-    const userToken = Cookies.get('authToken');
-    if (!userToken) {
+    const sessionId = Cookies.get('session_id');
+    if (!sessionId) {
       navigate('/login');
     }
   }, [navigate]);
 
   const handleLogout = () => {
-    Cookies.remove('authToken');
+    Cookies.remove('session_id');
     Cookies.remove('autoLogin');
     Cookies.remove('userName');
     navigate('/login');
