@@ -9,7 +9,7 @@ const Login = () => {
   const [autoLogin, setAutoLogin] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
-  const from = location.state?.from?.pathname || '/main';
+  const from = location.state?.from?.pathname || '/group-selection';
 
   const handleLogin = () => {
     // Dummy authentication logic

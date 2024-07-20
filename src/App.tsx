@@ -3,7 +3,8 @@ import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import Cookies from 'js-cookie';
 import Login from './pages/Login';
 import Register from './pages/Register';
-import MainBusinessPage from './pages/MainBusinessPage';
+import GroupSelectionPage from './pages/GroupSelectionPage';
+import GroupViewPage from './pages/GroupViewPage';
 
 const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
   const authToken = Cookies.get('authToken');
@@ -23,7 +24,7 @@ const App = () => {
     const authToken = Cookies.get('authToken');
     const autoLogin = Cookies.get('autoLogin') === 'true';
     if (authToken || autoLogin) {
-      navigate('/main');
+      navigate('/group-selection');
     }
   }, [navigate]);
 
@@ -32,10 +33,18 @@ const App = () => {
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
       <Route
-        path="/main"
+        path="/group-selection"
         element={
           <ProtectedRoute>
-            <MainBusinessPage />
+            <GroupSelectionPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/group/:group_id"
+        element={
+          <ProtectedRoute>
+            <GroupViewPage />
           </ProtectedRoute>
         }
       />
