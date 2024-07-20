@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import Cookies from 'js-cookie';
 import Login from './pages/Login';
@@ -19,14 +19,18 @@ const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
 
 const App = () => {
   const navigate = useNavigate();
+  const [initialCheckDone, setInitialCheckDone] = useState(false);
 
   useEffect(() => {
-    const authToken = Cookies.get('authToken');
-    const autoLogin = Cookies.get('autoLogin') === 'true';
-    if (authToken || autoLogin) {
-      navigate('/group-selection');
+    if (!initialCheckDone) {
+      const authToken = Cookies.get('authToken');
+      const autoLogin = Cookies.get('autoLogin') === 'true';
+      if (authToken || autoLogin) {
+        navigate('/group-selection');
+      }
+      setInitialCheckDone(true);
     }
-  }, [navigate]);
+  }, [navigate, initialCheckDone]);
 
   return (
     <Routes>

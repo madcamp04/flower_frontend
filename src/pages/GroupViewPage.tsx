@@ -21,7 +21,6 @@ const GroupViewPage = () => {
 
   useEffect(() => {
     const userToken = Cookies.get('authToken');
-    console.log('GroupViewPage: userToken:', userToken);
     if (!userToken) {
       navigate('/login');
     }
@@ -33,8 +32,6 @@ const GroupViewPage = () => {
     Cookies.remove('userName');
     navigate('/login');
   };
-
-  console.log("GroupViewPage: group_id:", group_id);
 
   return (
     <Container maxWidth="md">
