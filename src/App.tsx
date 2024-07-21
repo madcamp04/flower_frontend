@@ -22,16 +22,16 @@ const App = () => {
   const [initialCheckDone, setInitialCheckDone] = useState(false);
 
   useEffect(() => {
+    console.log("initialCheckDone: ", initialCheckDone);
     if (!initialCheckDone) {
       const sessionId = Cookies.get('session_id');
       const autoLogin = Cookies.get('autoLogin') === 'true';
+      console.log("sessionId: ", sessionId);
       if (sessionId || autoLogin) {
-        console.log("asdf");
         // Dummy auto-login logic
         const dummyResponse = { success: true, session_id: sessionId || 'dummySessionId123' };
         if (dummyResponse.success && dummyResponse.session_id) {
           Cookies.set('session_id', dummyResponse.session_id, { expires: 7 });
-          navigate('/group-selection');
         } else {
           navigate('/login');
         }
@@ -75,7 +75,7 @@ const App = () => {
           </ProtectedRoute>
         }
       />
-      <Route path="/" element={<Navigate to="/login" />} />
+      <Route path="/" element={<Navigate to={Cookies.get('session_id') || Cookies.get('autoLogin') === 'true' ? '/group-selection' : '/login'} />} />
     </Routes>
   );
 };
