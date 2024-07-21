@@ -44,8 +44,13 @@ const generateDummyData = (numProjects: number, numTasksPerProject: number): Pro
     const projectId = i + 1;
 
     for (let j = 0; j < numTasksPerProject; j++) {
-      const startDate = faker.date.between(startOfWeek(new Date()), addDays(new Date(), 7));
-      const endDate = addDays(startDate, faker.datatype.number({ min: 1, max: 7 }));
+      // Generate random dates
+      let startDate = faker.date.between(startOfWeek(new Date()), addDays(new Date(), 7));
+      startDate = new Date(startDate.setHours(0, 0, 0, 0)); // Set startDate to the start of the day
+
+      let endDate = addDays(startDate, faker.datatype.number({ min: 1, max: 7 }));
+      endDate = new Date(endDate.setHours(0, 0, 0, 0)); // Set endDate to the start of the day
+
       tasks.push({
         id: taskIdCounter++, // Ensure unique task IDs
         worker: workers[faker.datatype.number({ min: 0, max: workers.length - 1 })],
@@ -67,7 +72,6 @@ const generateDummyData = (numProjects: number, numTasksPerProject: number): Pro
 
   return projects;
 };
-
 const GroupViewPage = () => {
   const { group_id } = useParams<{ group_id: string }>();
   const location = useLocation();
@@ -137,7 +141,7 @@ const GroupViewPage = () => {
       });
 
       timelineInstance.setOptions({
-        moment: (date: MomentInput) => moment(date as Date).utcOffset(0),
+        moment: (date: MomentInput) => moment(date as Date).utcOffset(9),
         start: moment().startOf('week').toDate(),
         end: moment().startOf('week').add(1, 'month').toDate(),
         timeAxis: { scale: 'day', step: 1 },
