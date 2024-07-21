@@ -1,12 +1,13 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import Cookies from 'js-cookie';
-import { Container, Typography, AppBar, Toolbar, Button, Paper } from '@mui/material';
+import { Container, Typography, AppBar, Toolbar, Button, Paper, ButtonGroup } from '@mui/material';
 import { addDays, startOfWeek, format } from 'date-fns';
 import { faker } from '@faker-js/faker';
 import { DataSet, Timeline } from 'vis-timeline/standalone';
 import 'vis-timeline/styles/vis-timeline-graph2d.min.css';
 import moment, { MomentInput } from 'moment';
+import './GroupViewPage.css'; // Import the custom CSS
 
 interface LocationState {
   group_name?: string;
@@ -20,25 +21,51 @@ interface Task {
   title: string;
   startDate: Date;
   endDate: Date;
+  projectId: number;
 }
 
-const generateDummyData = (numTasks: number): Task[] => {
-  const tasks: Task[] = [];
-  const workers = ['John Doe', 'Jane Smith', 'Alice Johnson', 'Bob Brown'];
+interface Project {
+  id: number;
+  name: string;
+  tasks: Task[];
+  tags: string[];
+  color: string;
+}
 
-  for (let i = 0; i < numTasks; i++) {
-    const startDate = faker.date.between(startOfWeek(new Date()), addDays(new Date(), 7));
-    const endDate = addDays(startDate, faker.datatype.number({ min: 1, max: 7 }));
-    tasks.push({
-      id: i + 1,
-      worker: workers[faker.datatype.number({ min: 0, max: workers.length - 1 })],
-      title: faker.lorem.words(),
-      startDate,
-      endDate,
+const generateDummyData = (numProjects: number, numTasksPerProject: number): Project[] => {
+  const projects: Project[] = [];
+  const workers = ['John Doe', 'Jane Smith', 'Alice Johnson', 'Bob Brown'];
+  const colors = ['red', 'green', 'blue', 'orange', 'purple'];
+
+  let taskIdCounter = 1; // Counter to ensure unique task IDs
+
+  for (let i = 0; i < numProjects; i++) {
+    const tasks: Task[] = [];
+    const projectId = i + 1;
+
+    for (let j = 0; j < numTasksPerProject; j++) {
+      const startDate = faker.date.between(startOfWeek(new Date()), addDays(new Date(), 7));
+      const endDate = addDays(startDate, faker.datatype.number({ min: 1, max: 7 }));
+      tasks.push({
+        id: taskIdCounter++, // Ensure unique task IDs
+        worker: workers[faker.datatype.number({ min: 0, max: workers.length - 1 })],
+        title: faker.lorem.words(),
+        startDate,
+        endDate,
+        projectId,
+      });
+    }
+
+    projects.push({
+      id: projectId,
+      name: faker.company.name(),
+      tasks,
+      tags: [faker.lorem.word(), faker.lorem.word()],
+      color: colors[i % colors.length],
     });
   }
 
-  return tasks;
+  return projects;
 };
 
 const GroupViewPage = () => {
@@ -51,22 +78,23 @@ const GroupViewPage = () => {
     user_name = Cookies.get('userName') || 'Unknown User',
   } = (location.state || {}) as LocationState;
 
-  const [tasks, setTasks] = useState<Task[]>([]);
+  const [projects, setProjects] = useState<Project[]>([]);
   const timelineRef = useRef<HTMLDivElement | null>(null);
+  const [timeline, setTimeline] = useState<any>(null);
 
   useEffect(() => {
     const sessionId = Cookies.get('session_id');
-    console.log("sessionId: ", sessionId);
     if (!sessionId) {
       navigate('/login');
     } else {
-      const generatedTasks = generateDummyData(10);
-      setTasks(generatedTasks);
+      const generatedProjects = generateDummyData(5, 10);
+      setProjects(generatedProjects);
     }
   }, [navigate]);
 
   useEffect(() => {
-    if (timelineRef.current && tasks.length) {
+    if (timelineRef.current && projects.length) {
+      const tasks = projects.flatMap(project => project.tasks);
       const groups = new DataSet(
         [...new Set(tasks.map(task => task.worker))].map((worker, index) => ({
           id: index + 1,
@@ -75,53 +103,106 @@ const GroupViewPage = () => {
       );
 
       const items = new DataSet(
-        tasks.map(task => ({
-          id: task.id,
-          group: [...new Set(tasks.map(t => t.worker))].indexOf(task.worker) + 1,
-          content: task.title,
-          start: task.startDate,
-          end: task.endDate,
-        }))
+        tasks.map(task => {
+          const project = projects.find(project => project.id === task.projectId);
+          return {
+            id: task.id,
+            group: [...new Set(tasks.map(t => t.worker))].indexOf(task.worker) + 1,
+            content: task.title,
+            start: task.startDate,
+            end: task.endDate,
+            className: `vis-item ${project?.color}`, // Apply the custom CSS class
+          };
+        })
       );
 
-      const timeline = new Timeline(timelineRef.current, items, groups, {
+      const timelineInstance = new Timeline(timelineRef.current, items, groups, {
         stack: true,
-        editable: true,
+        editable: {
+          add: false,         // add new items by double tapping
+          updateTime: true,  // drag items horizontally
+          updateGroup: true, // drag items from one group to another
+          remove: true,       // delete an item by tapping the delete button top right
+          overrideItems: false  // allow these options to override item.editable
+        },
         margin: {
           item: 10,
           axis: 5,
         },
         orientation: { axis: 'both' },
-        zoomMin: 1000 * 60 * 60 * 24, // one day in milliseconds
-        zoomMax: 1000 * 60 * 60 * 24 * 30, // one month in milliseconds
+        zoomable: false, // Disable zooming
+        showWeekScale: true,
+        locale: 'en',
+        verticalScroll: true,
       });
 
-      timeline.setOptions({
+      timelineInstance.setOptions({
         moment: (date: MomentInput) => moment(date as Date).utcOffset(0),
         start: moment().startOf('week').toDate(),
         end: moment().startOf('week').add(1, 'month').toDate(),
         timeAxis: { scale: 'day', step: 1 },
       });
 
-      timeline.on('rangechange', (props) => {
-        timeline.setWindow(props.start, props.end, { animation: false });
+      timelineInstance.on('rangechange', (props) => {
+        timelineInstance.setWindow(props.start, props.end, { animation: false });
       });
-      timeline.on('click', (props) => {
-        console.log("click");
-        console.log(props);
+
+      timelineInstance.on('doubleClick', (props) => {
+        if (props.item) {
+          const item = items.get(props.item);
+          console.log(item);
+          // alert(`Task: ${item.content}\nStart: ${format(new Date(item.start), 'MMM d, yyyy')}\nEnd: ${format(new Date(item.end), 'MMM d, yyyy')}`);
+        } else if (props.group) {
+          const group = groups.get(props.group);
+          console.log(group);
+          // alert(`Group: ${group.content}`);
+        } else {
+          alert('Double-clicked on an empty space or axis.');
+        }
       });
-      timeline.on('doubleClick', (props) => {
-        console.log("doubleClick");
-        console.log(props);
-      });
+
+      setTimeline(timelineInstance);
     }
-  }, [tasks]);
+  }, [projects]);
 
   const handleLogout = () => {
     Cookies.remove('session_id');
     Cookies.remove('autoLogin');
     Cookies.remove('userName');
     navigate('/login');
+  };
+
+  const handleViewChange = (view: string) => {
+    if (timeline) {
+      let start, end, timeAxis;
+      switch (view) {
+        case 'week':
+          start = moment().startOf('week').toDate();
+          end = moment().startOf('week').add(1, 'week').toDate();
+          timeAxis = { scale: 'day', step: 1 };
+          timeline.setOptions({ showWeekScale: true });
+          break;
+        case 'month':
+          start = moment().startOf('month').toDate();
+          end = moment().endOf('month').toDate();
+          timeAxis = { scale: 'day', step: 7 }; // Show weeks within the month view
+          timeline.setOptions({ showWeekScale: false });
+          break;
+        case 'quarter':
+          start = moment().startOf('quarter').toDate();
+          end = moment().endOf('quarter').toDate();
+          timeAxis = { scale: 'month', step: 1 };
+          timeline.setOptions({ showWeekScale: false });
+          break;
+        default:
+          start = moment().startOf('week').toDate();
+          end = moment().startOf('week').add(1, 'month').toDate();
+          timeAxis = { scale: 'day', step: 1 };
+          timeline.setOptions({ showWeekScale: true });
+      }
+      timeline.setOptions({ timeAxis });
+      timeline.setWindow(start, end, { animation: false });
+    }
   };
 
   return (
@@ -143,6 +224,11 @@ const GroupViewPage = () => {
         <Typography variant="h6" component="h2" gutterBottom align="center">
           Owner: {owner_name}
         </Typography>
+        <ButtonGroup variant="contained" color="primary" sx={{ mb: 2, justifyContent: 'center' }} fullWidth>
+          <Button onClick={() => handleViewChange('week')}>Week View</Button>
+          <Button onClick={() => handleViewChange('month')}>Month View</Button>
+          <Button onClick={() => handleViewChange('quarter')}>Quarter View</Button>
+        </ButtonGroup>
         <div ref={timelineRef} style={{ height: '400px' }}></div>
       </Paper>
     </Container>
