@@ -5,6 +5,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import GroupSelectionPage from './pages/GroupSelectionPage';
 import GroupViewPage from './pages/GroupViewPage';
+import ProjectViewPage from './pages/ProjectViewPage';
 
 const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
   const sessionId = Cookies.get('session_id');
@@ -72,6 +73,14 @@ const App = () => {
         element={
           <ProtectedRoute>
             <GroupViewPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/project/:projectName"
+        element={
+          <ProtectedRoute>
+            <ProjectViewPage />
           </ProtectedRoute>
         }
       />

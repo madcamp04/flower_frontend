@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import Cookies from 'js-cookie';
 import { Container, Typography, AppBar, Toolbar, Button, Paper, ButtonGroup } from '@mui/material';
-import { addDays, startOfWeek, format } from 'date-fns';
+import { addDays, startOfWeek } from 'date-fns';
 import { faker } from '@faker-js/faker';
 import { DataSet, Timeline } from 'vis-timeline/standalone';
 import 'vis-timeline/styles/vis-timeline-graph2d.min.css';
@@ -72,6 +72,7 @@ const generateDummyData = (numProjects: number, numTasksPerProject: number): Pro
 
   return projects;
 };
+
 const GroupViewPage = () => {
   const { group_id } = useParams<{ group_id: string }>();
   const location = useLocation();
@@ -116,6 +117,7 @@ const GroupViewPage = () => {
             start: task.startDate,
             end: task.endDate,
             className: `vis-item ${project?.color}`, // Apply the custom CSS class
+            projectName: project?.name,
           };
         })
       );
@@ -154,12 +156,11 @@ const GroupViewPage = () => {
       timelineInstance.on('doubleClick', (props) => {
         if (props.item) {
           const item = items.get(props.item);
-          console.log(item);
-          // alert(`Task: ${item.content}\nStart: ${format(new Date(item.start), 'MMM d, yyyy')}\nEnd: ${format(new Date(item.end), 'MMM d, yyyy')}`);
+          const project = projects.find(p => p.name === item.projectName);
+          navigate(`/project/${encodeURIComponent(project?.name || '')}`, { state: { project } });
         } else if (props.group) {
           const group = groups.get(props.group);
           console.log(group);
-          // alert(`Group: ${group.content}`);
         } else {
           alert('Double-clicked on an empty space or axis.');
         }
