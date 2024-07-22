@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import GroupSelectionPage from './pages/GroupSelectionPage';
@@ -52,35 +54,37 @@ const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
 
 const App = () => {
   return (
-    <Routes>
-      <Route path="/login" element={<Login />} />
-      <Route path="/register" element={<Register />} />
-      <Route
-        path="/group-selection"
-        element={
-          <ProtectedRoute>
-            <GroupSelectionPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/group/:group_id"
-        element={
-          <ProtectedRoute>
-            <GroupViewPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/project/:projectName"
-        element={
-          <ProtectedRoute>
-            <ProjectViewPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route path="/" element={<Navigate to="/group-selection" />} />
-    </Routes>
+    <LocalizationProvider dateAdapter={AdapterDateFns}>
+      <Routes>
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route
+          path="/group-selection"
+          element={
+            <ProtectedRoute>
+              <GroupSelectionPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/group/:group_id"
+          element={
+            <ProtectedRoute>
+              <GroupViewPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/project/:projectName"
+          element={
+            <ProtectedRoute>
+              <ProjectViewPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route path="/" element={<Navigate to="/group-selection" />} />
+      </Routes>
+    </LocalizationProvider>
   );
 };
 

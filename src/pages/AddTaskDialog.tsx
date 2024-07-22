@@ -8,8 +8,9 @@ import {
   TextField,
   MenuItem,
 } from '@mui/material';
-import DatePicker from 'react-datepicker';
-import 'react-datepicker/dist/react-datepicker.css';
+import { DatePicker } from '@mui/x-date-pickers';
+import { LocalizationProvider } from '@mui/x-date-pickers';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 
 interface AddTaskDialogProps {
   open: boolean;
@@ -60,18 +61,20 @@ const AddTaskDialog: React.FC<AddTaskDialogProps> = ({ open, onClose, onSubmit, 
           fullWidth
           margin="normal"
         />
-        <DatePicker
-          selected={startDate}
-          onChange={(date: Date | null, event?: React.SyntheticEvent<any> | undefined) => setStartDate(date)}
-          dateFormat="yyyy-MM-dd"
-          customInput={<TextField label="Start Date" fullWidth margin="normal" />}
-        />
-        <DatePicker
-          selected={endDate}
-          onChange={(date: Date | null) => setEndDate(date)}
-          dateFormat="yyyy-MM-dd"
-          customInput={<TextField label="End Date" fullWidth margin="normal" />}
-        />
+        <LocalizationProvider dateAdapter={AdapterDateFns}>
+          <DatePicker
+            label="Start Date"
+            value={startDate}
+            onChange={(newValue: Date | null) => setStartDate(newValue)}
+            renderInput={(params) => <TextField {...params} fullWidth margin="normal" />}
+          />
+          <DatePicker
+            label="End Date"
+            value={endDate}
+            onChange={(newValue: Date | null) => setEndDate(newValue)}
+            renderInput={(params) => <TextField {...params} fullWidth margin="normal" />}
+          />
+        </LocalizationProvider>
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose}>Cancel</Button>
