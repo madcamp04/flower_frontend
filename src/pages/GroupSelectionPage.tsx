@@ -46,11 +46,11 @@ const GroupSelectionPage = () => {
     } else {
       setUserName(userName);
       setSessionId(sessionId);
-      fetchGroups(userName, sessionId);
+      fetchGroups(userName);
     }
   }, [navigate]);
 
-  const fetchGroups = (userName: string, sessionId: string) => {
+  const fetchGroups = (userName: string) => {
     // Dummy data
     const dummyGroups: Group[] = [
       { group_id: 1, group_name: 'Group 1', owner_user_id: 1, user_id: 1, writable: true, user_name: 'Owner 1' },
@@ -63,10 +63,11 @@ const GroupSelectionPage = () => {
     setGroups(sortedGroups);
 
     // Backend call example (commented out)
-    // fetch('https://your-backend-api.com/groups', {
+    // fetch('https://your-backend-api.com/api-get-groups', {
     //   method: 'POST',
+    //   credentials: 'include',
     //   headers: { 'Content-Type': 'application/json' },
-    //   body: JSON.stringify({ user_name: userName, session_id: sessionId })
+    //   body: JSON.stringify({ user_name: userName })
     // }).then(response => response.json())
     //   .then(data => {
     //     const sortedGroups = data.groups.sort((a, b) => (b.writable ? 1 : 0) - (a.writable ? 1 : 0));
@@ -100,10 +101,11 @@ const GroupSelectionPage = () => {
     handleClose();
 
     // Backend call example (commented out)
-    // fetch('https://your-backend-api.com/add-group', {
+    // fetch('https://your-backend-api.com/api-add-group', {
     //   method: 'POST',
+    //   credentials: 'include',
     //   headers: { 'Content-Type': 'application/json' },
-    //   body: JSON.stringify({ user_name: userName, session_id: sessionId, group_name: newGroupName, owner_user_name: newGroupOwner })
+    //   body: JSON.stringify({ user_name: userName, group_name: newGroupName, owner_user_name: newGroupOwner })
     // }).then(response => response.json())
     //   .then(data => {
     //     setGroups([...groups, data.newGroup]);

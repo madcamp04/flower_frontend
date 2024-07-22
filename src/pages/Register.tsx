@@ -45,7 +45,7 @@ const Register = () => {
     }
 
     // Backend call example (commented out)
-    // fetch('https://your-backend-api.com/api/login/check-username', {
+    // fetch('https://your-backend-api.com/api-login/check-username', {
     //   method: 'POST',
     //   headers: { 'Content-Type': 'application/json' },
     //   body: JSON.stringify({ username: id })
@@ -79,10 +79,10 @@ const Register = () => {
     }
 
     // Backend call example (commented out)
-    // fetch('https://your-backend-api.com/api/login/check-email', {
+    // fetch('https://your-backend-api.com/api-login/check-email', {
     //   method: 'POST',
     //   headers: { 'Content-Type': 'application/json' },
-    //   body: JSON.stringify({ email: email })
+    //   body: JSON.stringify({ email })
     // }).then(response => response.json())
     //   .then(data => {
     //     if (data.is_unique) {
@@ -122,7 +122,7 @@ const Register = () => {
     navigate('/login');
 
     // Backend call example (commented out)
-    // fetch('https://your-backend-api.com/api/login/register', {
+    // fetch('https://your-backend-api.com/api-login/register', {
     //   method: 'POST',
     //   headers: { 'Content-Type': 'application/json' },
     //   body: JSON.stringify({ username: id, email, password })

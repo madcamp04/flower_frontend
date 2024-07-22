@@ -14,8 +14,8 @@ const Login = () => {
   const handleLogin = () => {
     // Dummy authentication logic
     if (id === 'test' && password === 'password') {
-      const dummySessionId = 'dummySessionId123'; // Dummy session ID
-      Cookies.set('session_id', dummySessionId, { expires: autoLogin ? 7 : 1 }); // Set cookie to expire in 1 day or 7 days
+      const dummySessionId = 'dummySessionId123';
+      Cookies.set('session_id', dummySessionId, { expires: autoLogin ? 7 : undefined });
       Cookies.set('autoLogin', autoLogin.toString());
       Cookies.set('userName', id); // Assuming the username is the ID
       navigate(from, { replace: true });
@@ -24,14 +24,15 @@ const Login = () => {
     }
 
     // Backend call example (commented out)
-    // fetch('https://your-backend-api.com/login', {
+    // fetch('https://your-backend-api.com/api-login/login', {
     //   method: 'POST',
+    //   credentials: 'include',
     //   headers: { 'Content-Type': 'application/json' },
-    //   body: JSON.stringify({ id, password })
+    //   body: JSON.stringify({ username: id, password, remember_me: autoLogin })
     // }).then(response => response.json())
     //   .then(data => {
     //     if (data.success) {
-    //       Cookies.set('session_id', data.session_id, { expires: autoLogin ? 7 : 1 });
+    //       Cookies.set('session_id', data.session_id, { expires: autoLogin ? 7 : undefined });
     //       Cookies.set('autoLogin', autoLogin.toString());
     //       navigate('/group-selection');
     //     } else {

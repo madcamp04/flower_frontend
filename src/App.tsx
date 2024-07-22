@@ -30,22 +30,21 @@ const App = () => {
       console.log("sessionId: ", sessionId);
       if (sessionId || autoLogin) {
         // Dummy auto-login logic
-        const dummyResponse = { success: true, session_id: sessionId || 'dummySessionId123' };
-        if (dummyResponse.success && dummyResponse.session_id) {
-          Cookies.set('session_id', dummyResponse.session_id, { expires: 7 });
+        const dummyResponse = { success: true };
+        if (dummyResponse.success) {
+          navigate('/group-selection');
         } else {
           navigate('/login');
         }
 
         // Backend call example (commented out)
-        // fetch('https://your-backend-api.com/api/login/auto-login', {
+        // fetch('https://your-backend-api.com/api-login/auto-login', {
         //   method: 'POST',
-        //   headers: { 'Content-Type': 'application/json' },
-        //   body: JSON.stringify({ session_id: sessionId })
+        //   credentials: 'include',
+        //   headers: { 'Content-Type': 'application/json' }
         // }).then(response => response.json())
         //   .then(data => {
         //     if (data.success) {
-        //       Cookies.set('session_id', data.session_id, { expires: 7 });
         //       navigate('/group-selection');
         //     } else {
         //       navigate('/login');
