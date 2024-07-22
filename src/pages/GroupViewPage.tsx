@@ -140,13 +140,18 @@ const GroupViewPage = () => {
         showWeekScale: true,
         locale: 'en',
         verticalScroll: true,
+        snap: (date) => {
+          return moment(date).startOf('day').toDate();
+        }
       });
 
+      // Set initial view to "week view"
       timelineInstance.setOptions({
         moment: (date: MomentInput) => moment(date as Date).utcOffset(9),
         start: moment().startOf('week').toDate(),
-        end: moment().startOf('week').add(1, 'month').toDate(),
+        end: moment().startOf('week').add(1, 'week').toDate(),
         timeAxis: { scale: 'day', step: 1 },
+        showWeekScale: true,
       });
 
       timelineInstance.on('rangechange', (props) => {

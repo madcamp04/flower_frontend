@@ -30,7 +30,6 @@ interface Group {
 
 const GroupSelectionPage = () => {
   const [userName, setUserName] = useState<string>('');
-  const [sessionId, setSessionId] = useState<string>('');
   const [groups, setGroups] = useState<Group[]>([]);
   const [open, setOpen] = useState<boolean>(false);
   const [newGroupName, setNewGroupName] = useState<string>('');
@@ -45,7 +44,6 @@ const GroupSelectionPage = () => {
       navigate('/login');
     } else {
       setUserName(userName);
-      setSessionId(sessionId);
       fetchGroups(userName);
     }
   }, [navigate]);
