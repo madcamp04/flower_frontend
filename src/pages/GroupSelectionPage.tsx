@@ -46,6 +46,7 @@ const GroupSelectionPage = () => {
     .then(response => response.json())
     .then(data => {
       if (data.success) {
+        console.log('groupselectionpage Auto-login successful:', data);
         setUserName(data.username);
         fetchGroups(data.username);
       } else {

@@ -7,6 +7,7 @@ import { DataSet, Timeline } from 'vis-timeline/standalone';
 import 'vis-timeline/styles/vis-timeline-graph2d.min.css';
 import moment, { MomentInput } from 'moment';
 import './GroupViewPage.css'; // Import the custom CSS
+import AddTaskDialog from './AddTaskDialog';
 
 interface LocationState {
   group_name?: string;
@@ -85,6 +86,7 @@ const GroupViewPage = () => {
   const [projects, setProjects] = useState<Project[]>([]);
   const timelineRef = useRef<HTMLDivElement | null>(null);
   const [timeline, setTimeline] = useState<any>(null);
+  const [openDialog, setOpenDialog] = useState(false);
 
   useEffect(() => {
     const generatedProjects = generateDummyData(5, 10);
@@ -168,7 +170,6 @@ const GroupViewPage = () => {
       setTimeline(timelineInstance);
     }
   }, [projects]);
-
   const handleLogout = () => {
     fetch('/backend/api-login/logout', {
       method: 'POST',
@@ -226,6 +227,45 @@ const GroupViewPage = () => {
     }
   };
 
+  const handleOpenDialog = () => {
+    setOpenDialog(true);
+  };
+
+  const handleCloseDialog = () => {
+    setOpenDialog(false);
+  };
+
+  const handleTaskSubmit = (newTask: { worker: string; title: string; startDate: string; endDate: string }) => {
+    const project = projects[0]; // Assign to the first project for simplicity
+    const taskId = projects.reduce((maxId, project) => {
+      const maxTaskId = project.tasks.reduce((maxTaskId, task) => Math.max(maxTaskId, task.id), 0);
+      return Math.max(maxId, maxTaskId);
+    }, 0) + 1;
+    
+    const updatedProjects = projects.map(p => {
+      if (p.id === project.id) {
+        return {
+          ...p,
+          tasks: [
+            ...p.tasks,
+            {
+              id: taskId,
+              worker: newTask.worker,
+              title: newTask.title,
+              startDate: new Date(newTask.startDate),
+              endDate: new Date(newTask.endDate),
+              projectId: p.id,
+            },
+          ],
+        };
+      }
+      return p;
+    });
+
+    setProjects(updatedProjects);
+    handleCloseDialog();
+  };
+
   return (
     <Container maxWidth="lg">
       <AppBar position="static">
@@ -250,8 +290,17 @@ const GroupViewPage = () => {
           <Button onClick={() => handleViewChange('month')}>Month View</Button>
           <Button onClick={() => handleViewChange('quarter')}>Quarter View</Button>
         </ButtonGroup>
+        <Button variant="contained" color="primary" onClick={handleOpenDialog} fullWidth>
+          Add Task
+        </Button>
         <div ref={timelineRef} style={{ height: '400px' }}></div>
       </Paper>
+      <AddTaskDialog
+        open={openDialog}
+        onClose={handleCloseDialog}
+        onSubmit={handleTaskSubmit}
+        workers={[...new Set(projects.flatMap(project => project.tasks.map(task => task.worker)))]}
+      />
     </Container>
   );
 };
