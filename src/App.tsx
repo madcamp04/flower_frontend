@@ -32,7 +32,7 @@ const App = () => {
         // Dummy auto-login logic
         const dummyResponse = { success: true };
         if (dummyResponse.success) {
-          navigate('/group-selection');
+          // Do not navigate here to avoid redirecting on refresh
         } else {
           navigate('/login');
         }
@@ -45,7 +45,7 @@ const App = () => {
         // }).then(response => response.json())
         //   .then(data => {
         //     if (data.success) {
-        //       navigate('/group-selection');
+        //       // Do not navigate here to avoid redirecting on refresh
         //     } else {
         //       navigate('/login');
         //     }
