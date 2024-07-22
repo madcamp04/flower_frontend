@@ -135,7 +135,7 @@ const GroupViewPage = () => {
           item: 10,
           axis: 5,
         },
-        orientation: { axis: 'both' },
+        orientation: { axis: 'top' },
         zoomable: false, // Disable zooming
         showWeekScale: true,
         locale: 'en',
