@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
-import Cookies from 'js-cookie';
 import { Container, Typography, AppBar, Toolbar, Button, Paper, ButtonGroup } from '@mui/material';
 import { addDays, startOfWeek } from 'date-fns';
 import { faker } from '@faker-js/faker';
@@ -80,7 +79,7 @@ const GroupViewPage = () => {
   const {
     group_name = 'Unknown Group',
     owner_name = 'Unknown Owner',
-    user_name = Cookies.get('userName') || 'Unknown User',
+    user_name = 'Unknown User',
   } = (location.state || {}) as LocationState;
 
   const [projects, setProjects] = useState<Project[]>([]);
@@ -88,14 +87,9 @@ const GroupViewPage = () => {
   const [timeline, setTimeline] = useState<any>(null);
 
   useEffect(() => {
-    const sessionId = Cookies.get('session_id');
-    if (!sessionId) {
-      navigate('/login');
-    } else {
-      const generatedProjects = generateDummyData(5, 10);
-      setProjects(generatedProjects);
-    }
-  }, [navigate]);
+    const generatedProjects = generateDummyData(5, 10);
+    setProjects(generatedProjects);
+  }, []);
 
   useEffect(() => {
     if (timelineRef.current && projects.length) {
@@ -176,10 +170,27 @@ const GroupViewPage = () => {
   }, [projects]);
 
   const handleLogout = () => {
-    Cookies.remove('session_id');
-    Cookies.remove('autoLogin');
-    Cookies.remove('userName');
-    navigate('/login');
+    fetch('/backend/api-login/logout', {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({})
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        navigate('/login');
+      } else {
+        console.error('Logout failed:', data.message);
+        navigate('/login');
+      }
+    })
+    .catch(error => {
+      console.error('Logout error:', error);
+      navigate('/login');
+    });
   };
 
   const handleViewChange = (view: string) => {

@@ -28,71 +28,47 @@ const Register = () => {
   };
 
   const checkIdUniqueness = () => {
-    // Dummy uniqueness check for ID
-    let idError = '';
-
-    if (id === 'existingUser') {
-      idError = 'ID already exists';
-    }
-
-    if (idError) {
-      setErrors((prevErrors) => ({ ...prevErrors, id: idError }));
-      setUniqueCheck((prevCheck) => ({ ...prevCheck, id: false }));
-    } else {
-      setErrors((prevErrors) => ({ ...prevErrors, id: '' }));
-      setUniqueCheck((prevCheck) => ({ ...prevCheck, id: true }));
-      alert('ID is unique');
-    }
-
-    // Backend call example (commented out)
-    // fetch('https://your-backend-api.com/api-login/check-username', {
-    //   method: 'POST',
-    //   headers: { 'Content-Type': 'application/json' },
-    //   body: JSON.stringify({ username: id })
-    // }).then(response => response.json())
-    //   .then(data => {
-    //     if (data.is_unique) {
-    //       setUniqueCheck((prevCheck) => ({ ...prevCheck, id: true }));
-    //       alert('ID is unique');
-    //     } else {
-    //       setErrors((prevErrors) => ({ ...prevErrors, id: 'ID already exists' }));
-    //       setUniqueCheck((prevCheck) => ({ ...prevCheck, id: false }));
-    //     }
-    //   });
+    fetch(`/backend/api-login/check-username`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username: id })
+    }).then(response => response.json())
+      .then(data => {
+        if (data.is_unique) {
+          setUniqueCheck((prevCheck) => ({ ...prevCheck, id: true }));
+          setErrors((prevErrors) => ({ ...prevErrors, id: '' }));
+          alert('ID is unique');
+        } else {
+          setErrors((prevErrors) => ({ ...prevErrors, id: 'ID already exists' }));
+          setUniqueCheck((prevCheck) => ({ ...prevCheck, id: false }));
+        }
+      })
+      .catch(() => {
+        setErrors((prevErrors) => ({ ...prevErrors, id: 'Error checking ID uniqueness' }));
+        setUniqueCheck((prevCheck) => ({ ...prevCheck, id: false }));
+      });
   };
 
   const checkEmailUniqueness = () => {
-    // Dummy uniqueness check for Email
-    let emailError = '';
-
-    if (email === 'existing@example.com') {
-      emailError = 'Email already exists';
-    }
-
-    if (emailError) {
-      setErrors((prevErrors) => ({ ...prevErrors, email: emailError }));
-      setUniqueCheck((prevCheck) => ({ ...prevCheck, email: false }));
-    } else {
-      setErrors((prevErrors) => ({ ...prevErrors, email: '' }));
-      setUniqueCheck((prevCheck) => ({ ...prevCheck, email: true }));
-      alert('Email is unique');
-    }
-
-    // Backend call example (commented out)
-    // fetch('https://your-backend-api.com/api-login/check-email', {
-    //   method: 'POST',
-    //   headers: { 'Content-Type': 'application/json' },
-    //   body: JSON.stringify({ email })
-    // }).then(response => response.json())
-    //   .then(data => {
-    //     if (data.is_unique) {
-    //       setUniqueCheck((prevCheck) => ({ ...prevCheck, email: true }));
-    //       alert('Email is unique');
-    //     } else {
-    //       setErrors((prevErrors) => ({ ...prevErrors, email: 'Email already exists' }));
-    //       setUniqueCheck((prevCheck) => ({ ...prevCheck, email: false }));
-    //     }
-    //   });
+    fetch(`/backend/api-login/check-email`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email })
+    }).then(response => response.json())
+      .then(data => {
+        if (data.is_unique) {
+          setUniqueCheck((prevCheck) => ({ ...prevCheck, email: true }));
+          setErrors((prevErrors) => ({ ...prevErrors, email: '' }));
+          alert('Email is unique');
+        } else {
+          setErrors((prevErrors) => ({ ...prevErrors, email: 'Email already exists' }));
+          setUniqueCheck((prevCheck) => ({ ...prevCheck, email: false }));
+        }
+      })
+      .catch(() => {
+        setErrors((prevErrors) => ({ ...prevErrors, email: 'Error checking email uniqueness' }));
+        setUniqueCheck((prevCheck) => ({ ...prevCheck, email: false }));
+      });
   };
 
   const handleRegister = () => {
@@ -117,24 +93,22 @@ const Register = () => {
       return;
     }
 
-    // Registration logic
-    alert('Registration successful');
-    navigate('/login');
-
-    // Backend call example (commented out)
-    // fetch('https://your-backend-api.com/api-login/register', {
-    //   method: 'POST',
-    //   headers: { 'Content-Type': 'application/json' },
-    //   body: JSON.stringify({ username: id, email, password })
-    // }).then(response => response.json())
-    //   .then(data => {
-    //     if (data.success) {
-    //       alert('Registration successful');
-    //       navigate('/login');
-    //     } else {
-    //       alert('Registration failed');
-    //     }
-    //   });
+    fetch(`/backend/api-login/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username: id, email, password })
+    }).then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          alert('Registration successful');
+          navigate('/login');
+        } else {
+          alert('Registration failed');
+        }
+      })
+      .catch(() => {
+        alert('Registration failed');
+      });
   };
 
   return (

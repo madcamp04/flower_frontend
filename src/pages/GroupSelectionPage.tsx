@@ -1,6 +1,5 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Cookies from 'js-cookie';
 import {
   Container,
   Button,
@@ -38,14 +37,21 @@ const GroupSelectionPage = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const userName = Cookies.get('userName');
-    const sessionId = Cookies.get('session_id');
-    if (!userName || !sessionId) {
-      navigate('/login');
-    } else {
-      setUserName(userName);
-      fetchGroups(userName);
-    }
+    fetch('/backend/api-login/auto-login', {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({})
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        setUserName(data.username);
+        fetchGroups(data.username);
+      } else {
+        navigate('/login');
+      }
+    });
   }, [navigate]);
 
   const fetchGroups = (userName: string) => {
@@ -61,9 +67,8 @@ const GroupSelectionPage = () => {
     setGroups(sortedGroups);
 
     // Backend call example (commented out)
-    // fetch('https://your-backend-api.com/api-get-groups', {
+    // fetch('/backend/api-login/groups', {
     //   method: 'POST',
-    //   credentials: 'include',
     //   headers: { 'Content-Type': 'application/json' },
     //   body: JSON.stringify({ user_name: userName })
     // }).then(response => response.json())
@@ -99,9 +104,8 @@ const GroupSelectionPage = () => {
     handleClose();
 
     // Backend call example (commented out)
-    // fetch('https://your-backend-api.com/api-add-group', {
+    // fetch('/backend/api-login/add-group', {
     //   method: 'POST',
-    //   credentials: 'include',
     //   headers: { 'Content-Type': 'application/json' },
     //   body: JSON.stringify({ user_name: userName, group_name: newGroupName, owner_user_name: newGroupOwner })
     // }).then(response => response.json())
@@ -112,10 +116,27 @@ const GroupSelectionPage = () => {
   };
 
   const handleLogout = () => {
-    Cookies.remove('session_id');
-    Cookies.remove('autoLogin');
-    Cookies.remove('userName');
-    navigate('/login');
+    fetch('/backend/api-login/logout', {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({})
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        navigate('/login');
+      } else {
+        console.error('Logout failed:', data.message);
+        navigate('/login');
+      }
+    })
+    .catch(error => {
+      console.error('Logout error:', error);
+      navigate('/login');
+    });
   };
 
   return (

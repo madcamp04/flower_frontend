@@ -1,6 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
-import Cookies from 'js-cookie';
+import React, { useState, useEffect } from 'react';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import GroupSelectionPage from './pages/GroupSelectionPage';
@@ -8,10 +7,43 @@ import GroupViewPage from './pages/GroupViewPage';
 import ProjectViewPage from './pages/ProjectViewPage';
 
 const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
-  const sessionId = Cookies.get('session_id');
-  const autoLogin = Cookies.get('autoLogin') === 'true';
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
-  if (!sessionId && !autoLogin) {
+  useEffect(() => {
+    fetch('/backend/api-login/auto-login', {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({})
+    })
+    .then(response => {
+      console.log("Auto-login raw response:", response);
+      return response.json();
+    })
+    .then(data => {
+      console.log("Auto-login response:", data);
+      if (data.success) {
+        setIsAuthenticated(true);
+      } else {
+        setIsAuthenticated(false);
+      }
+      setIsLoading(false);
+    })
+    .catch(error => {
+      console.error("Auto-login error:", error);
+      setIsAuthenticated(false);
+      setIsLoading(false);
+    });
+  }, []);
+
+  if (isLoading) {
+    return <div>Loading...</div>; // You can replace this with a loading spinner or component
+  }
+
+  if (!isAuthenticated) {
     return <Navigate to="/login" />;
   }
 
@@ -19,42 +51,6 @@ const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
 };
 
 const App = () => {
-  const navigate = useNavigate();
-  const [initialCheckDone, setInitialCheckDone] = useState(false);
-
-  useEffect(() => {
-    console.log("initialCheckDone: ", initialCheckDone);
-    if (!initialCheckDone) {
-      const sessionId = Cookies.get('session_id');
-      const autoLogin = Cookies.get('autoLogin') === 'true';
-      console.log("sessionId: ", sessionId);
-      if (sessionId || autoLogin) {
-        // Dummy auto-login logic
-        const dummyResponse = { success: true };
-        if (dummyResponse.success) {
-          // Do not navigate here to avoid redirecting on refresh
-        } else {
-          navigate('/login');
-        }
-
-        // Backend call example (commented out)
-        // fetch('https://your-backend-api.com/api-login/auto-login', {
-        //   method: 'POST',
-        //   credentials: 'include',
-        //   headers: { 'Content-Type': 'application/json' }
-        // }).then(response => response.json())
-        //   .then(data => {
-        //     if (data.success) {
-        //       // Do not navigate here to avoid redirecting on refresh
-        //     } else {
-        //       navigate('/login');
-        //     }
-        //   });
-      }
-      setInitialCheckDone(true);
-    }
-  }, [navigate, initialCheckDone]);
-
   return (
     <Routes>
       <Route path="/login" element={<Login />} />
@@ -83,7 +79,7 @@ const App = () => {
           </ProtectedRoute>
         }
       />
-      <Route path="/" element={<Navigate to={Cookies.get('session_id') || Cookies.get('autoLogin') === 'true' ? '/group-selection' : '/login'} />} />
+      <Route path="/" element={<Navigate to="/group-selection" />} />
     </Routes>
   );
 };

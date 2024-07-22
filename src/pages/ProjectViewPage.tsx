@@ -1,7 +1,6 @@
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Container, Typography, Paper, List, ListItem, ListItemText, AppBar, Toolbar, Button } from '@mui/material';
-import Cookies from 'js-cookie';
 
 interface Task {
   id: number;
@@ -29,10 +28,27 @@ const ProjectViewPage = () => {
   const { project } = location.state as LocationState;
 
   const handleLogout = () => {
-    Cookies.remove('session_id');
-    Cookies.remove('autoLogin');
-    Cookies.remove('userName');
-    navigate('/login');
+    fetch('/backend/api-login/logout', {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({})
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        navigate('/login');
+      } else {
+        console.error('Logout failed:', data.message);
+        navigate('/login');
+      }
+    })
+    .catch(error => {
+      console.error('Logout error:', error);
+      navigate('/login');
+    });
   };
 
   return (
