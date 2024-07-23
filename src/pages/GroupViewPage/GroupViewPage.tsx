@@ -6,38 +6,88 @@ import TimelineComponent from './TimelineComponent';
 import ViewButtons from './ViewButtons';
 import AddTaskDialog from './AddTaskDialog';
 import AddWorkerDialog from './AddWorkerDialog';
-import AddProjectDialog from './AddProjectDialog'; // Import the new component
+import AddProjectDialog from './AddProjectDialog';
 import TagsSelector from './TagsSelector';
-import { generateDummyData, Project, Task, Worker } from './utils';
+import { Task, Worker } from './utils';
 import { useAppContext } from '../../context/AppContext';
 import './GroupViewPage.css';
 
 const GroupViewPage: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { groupName, setGroupName, groupOwner, setGroupOwner, userName } = useAppContext();
+  const { groupName, groupOwner, userName } = useAppContext();
 
-  const [projects, setProjects] = useState<Project[]>([]);
+  const [tasks, setTasks] = useState<Task[]>([]);
   const [workers, setWorkers] = useState<Worker[]>([]);
   const [openAddTaskDialog, setOpenAddTaskDialog] = useState(false);
   const [openAddWorkerDialog, setOpenAddWorkerDialog] = useState(false);
-  const [openAddProjectDialog, setOpenAddProjectDialog] = useState(false); // State for AddProjectDialog
+  const [openAddProjectDialog, setOpenAddProjectDialog] = useState(false);
   const [timeline, setTimeline] = useState<any>(null);
   const [activeTags, setActiveTags] = useState<string[]>([]);
+  const [allTags, setAllTags] = useState<string[]>([]);
 
   useEffect(() => {
-    const { projects, workers } = generateDummyData(5, 10);
-    setProjects(projects);
-    setWorkers(workers);
-  }, []);
+    fetchTags();
+    fetchWorkers();
+    fetchTasks();
+  }, [activeTags]);
+
+  const fetchTags = async () => {
+    const response = await fetch('/backend/api-group-view/tag-list', {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        owner_user_name: groupOwner,
+        group_name: groupName,
+      }),
+    });
+    const data = await response.json();
+    setAllTags(data.tags.map(tag => tag.tag_name));
+  };
+
+  const fetchWorkers = async () => {
+    const response = await fetch('/backend/api-group-view/worker-list', {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        owner_user_name: groupOwner,
+        group_name: groupName,
+      }),
+    });
+    const data = await response.json();
+    setWorkers(data.workers);
+  };
+
+  const fetchTasks = async () => {
+    const response = await fetch('/backend/api-group-view/task-list/by-tag-list', {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        owner_user_name: groupOwner,
+        group_name: groupName,
+        tags: activeTags,
+      }),
+    });
+    const data = await response.json();
+    setTasks(data.tasks.map((task: any) => ({
+      task_title: task.task_title,
+      start_date: new Date(task.start_time),
+      end_date: new Date(task.end_time),
+      worker_name: task.worker_name,
+      description: task.description,
+      project_name: task.project_name,
+      tag_color: task.tag_colors,
+    })));
+  };
 
   const handleLogout = () => {
     fetch('/backend/api-login/logout', {
       method: 'POST',
       credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({}),
     })
       .then(response => response.json())
@@ -49,36 +99,43 @@ const GroupViewPage: React.FC = () => {
       });
   };
 
-  const handleTaskSubmit = (newTask: { worker_name: string; task_title: string; start_date: string; end_date: string; description: string; project_name: string; tag_color: string[] }) => {
-    const updatedProjects = [...projects];
-    const projectIndex = updatedProjects.findIndex(project => project.project_name === newTask.project_name);
-
-    if (projectIndex >= 0) {
-      const newTaskObject: Task = {
-        task_title: newTask.task_title,
-        start_date: new Date(newTask.start_date),
-        end_date: new Date(newTask.end_date),
-        worker_name: newTask.worker_name,
-        description: newTask.description,
-        project_name: newTask.project_name,
-        tag_color: newTask.tag_color,
-      };
-
-      updatedProjects[projectIndex].tasks.push(newTaskObject);
-      setProjects(updatedProjects);
-    }
+  const handleTaskSubmit = async (newTask: { worker_name: string; task_title: string; start_date: string; end_date: string; description: string; project_name: string; tag_color: string[] }) => {
+    // Call your backend API to add a task here
+    console.log('Task submission not implemented');
+    // After adding a task, re-fetch tasks to update the UI
+    await fetchTasks();
   };
 
-  const handleWorkerSubmit = (newWorker: { user_name: string; user_email: string }) => {
-    setWorkers(prevWorkers => [...prevWorkers, newWorker]);
+  const handleWorkerSubmit = async (newWorker: { user_name: string; user_email: string }) => {
+    await fetch('/backend/api-group-view/add-worker', {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        owner_user_name: groupOwner,
+        group_name: groupName,
+        worker_user_name: newWorker.user_name,
+      }),
+    });
+    await fetchWorkers(); // Re-fetch workers to update the UI
   };
 
-  const handleProjectSubmit = (newProject: Project) => {
-    setProjects(prevProjects => [...prevProjects, newProject]);
+  const handleProjectSubmit = async (newProject: { project_name: string; project_description: string; tags: string[] }) => {
+    await fetch('/backend/api-group-view/add-project', {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        owner_user_name: groupOwner,
+        group_name: groupName,
+        project_name: newProject.project_name,
+      }),
+    });
+    await fetchTags(); // Re-fetch tags since new tags might have been added
+    await fetchTasks(); // Re-fetch tasks to update the UI
   };
 
-  const allTags = Array.from(new Set(projects.flatMap(project => project.tags)));
-  const projectNames = projects.map(project => project.project_name);
+  const projectNames = [...new Set(tasks.map(task => task.project_name))];
 
   return (
     <Container maxWidth="lg">
@@ -98,8 +155,8 @@ const GroupViewPage: React.FC = () => {
         <TagsSelector tags={allTags} activeTags={activeTags} setActiveTags={setActiveTags} />
         <ViewButtons timeline={timeline} />
         <TimelineComponent
-          projects={projects}
-          workers={workers} // Pass workers to the TimelineComponent
+          tasks={tasks}
+          workers={workers}
           setTimeline={setTimeline}
           navigate={navigate}
           activeTags={activeTags}

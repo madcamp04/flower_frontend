@@ -2,24 +2,22 @@ import React, { useEffect, useRef } from 'react';
 import { DataSet, Timeline } from 'vis-timeline/standalone';
 import moment from 'moment';
 import 'vis-timeline/styles/vis-timeline-graph2d.min.css';
-import { Project, Worker } from './utils';
+import { Task, Worker } from './utils';
 
 interface TimelineComponentProps {
-  projects: Project[];
+  tasks: Task[];
   workers: Worker[];
   setTimeline: (timeline: any) => void;
   navigate: any;
   activeTags: string[];
 }
 
-const TimelineComponent: React.FC<TimelineComponentProps> = ({ projects, workers, setTimeline, navigate, activeTags }) => {
+const TimelineComponent: React.FC<TimelineComponentProps> = ({ tasks, workers, setTimeline, navigate, activeTags }) => {
   const timelineRef = useRef<HTMLDivElement | null>(null);
   const timelineInstanceRef = useRef<Timeline | null>(null);
 
   useEffect(() => {
-    if (timelineRef.current && projects.length) {
-      const tasks = projects.flatMap(project => project.tasks);
-
+    if (timelineRef.current) {
       const groups = new DataSet(
         workers.map((worker, index) => ({
           id: index + 1,
@@ -29,7 +27,6 @@ const TimelineComponent: React.FC<TimelineComponentProps> = ({ projects, workers
 
       const items = new DataSet(
         tasks.map(task => {
-          const project = projects.find(project => project.project_name === task.project_name);
           return {
             id: task.task_title,
             group: workers.findIndex(worker => worker.user_name === task.worker_name) + 1,
@@ -37,7 +34,7 @@ const TimelineComponent: React.FC<TimelineComponentProps> = ({ projects, workers
             start: task.start_date,
             end: task.end_date,
             className: `vis-item`,
-            projectName: project?.project_name,
+            projectName: task.project_name,
           };
         })
       );
@@ -73,8 +70,7 @@ const TimelineComponent: React.FC<TimelineComponentProps> = ({ projects, workers
         timelineInstance.on('doubleClick', (props) => {
           if (props.item) {
             const item = items.get(props.item);
-            const project = projects.find(p => p.project_name === item.projectName);
-            navigate(`/project/${encodeURIComponent(project?.project_name || '')}`, { state: { project } });
+            navigate(`/project/${encodeURIComponent(item.projectName || '')}`);
           } else {
             alert('Double-clicked on an empty space or axis.');
           }
@@ -84,7 +80,7 @@ const TimelineComponent: React.FC<TimelineComponentProps> = ({ projects, workers
         timelineInstanceRef.current = timelineInstance;
       }
     }
-  }, [projects, workers, activeTags]);
+  }, [tasks, workers, activeTags]);
 
   useEffect(() => {
     return () => {
