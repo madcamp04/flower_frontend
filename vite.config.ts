@@ -10,7 +10,8 @@ export default defineConfig({
       '/backend': {
         target: process.env.VITE_BACKEND_URL,
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/backend/, '')
+        rewrite: (path) => path.replace(/^\/backend/, ''),
+        secure: process.env.NODE_ENV === 'production', // Use secure in production
       }
     }
   }

@@ -1,25 +1,25 @@
-/* GroupViewPage.css */
 .vis-item.red {
     background-color: #FFCDD2;
     border-color: #E57373;
-}
-
-.vis-item.green {
+  }
+  
+  .vis-item.green {
     background-color: #C8E6C9;
     border-color: #81C784;
-}
-
-.vis-item.blue {
+  }
+  
+  .vis-item.blue {
     background-color: #BBDEFB;
     border-color: #64B5F6;
-}
-
-.vis-item.orange {
+  }
+  
+  .vis-item.orange {
     background-color: #FFE0B2;
     border-color: #FFB74D;
-}
-
-.vis-item.purple {
+  }
+  
+  .vis-item.purple {
     background-color: #D1C4E9;
     border-color: #9575CD;
-}
+  }
+  

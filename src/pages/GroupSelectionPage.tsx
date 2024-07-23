@@ -1,175 +1,112 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { useParams, useLocation, useNavigate } from 'react-router-dom';
-import { Container, Typography, AppBar, Toolbar, Button, Paper, ButtonGroup } from '@mui/material';
-import { addDays, startOfWeek } from 'date-fns';
-import { faker } from '@faker-js/faker';
-import { DataSet, Timeline } from 'vis-timeline/standalone';
-import 'vis-timeline/styles/vis-timeline-graph2d.min.css';
-import moment, { MomentInput } from 'moment';
-import AddTaskDialog from './AddTaskDialog'; // Ensure correct import path
-import './GroupViewPage.css'; // Import the custom CSS
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import {
+  Container,
+  Button,
+  Typography,
+  Box,
+  Fab,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  TextField,
+  Grid,
+  AppBar,
+  Toolbar,
+} from '@mui/material';
+import AddIcon from '@mui/icons-material/Add';
 
-interface LocationState {
-  group_name?: string;
-  owner_name?: string;
-  user_name?: string;
+interface Group {
+  group_name: string;
+  writeable: boolean;
+  owner_username: string;
 }
 
-interface Task {
-  id: number;
-  worker: string;
-  title: string;
-  startDate: Date;
-  endDate: Date;
-  projectId: number;
-}
+const GroupSelectionPage = () => {
+  const [userName, setUserName] = useState<string>('');
+  const [groups, setGroups] = useState<Group[]>([]);
+  const [open, setOpen] = useState<boolean>(false);
+  const [newGroupName, setNewGroupName] = useState<string>('');
 
-interface Project {
-  id: number;
-  name: string;
-  tasks: Task[];
-  tags: string[];
-  color: string;
-}
-
-const generateDummyData = (numProjects: number, numTasksPerProject: number): Project[] => {
-  const projects: Project[] = [];
-  const workers = ['John Doe', 'Jane Smith', 'Alice Johnson', 'Bob Brown'];
-  const colors = ['red', 'green', 'blue', 'orange', 'purple'];
-
-  let taskIdCounter = 1; // Counter to ensure unique task IDs
-
-  for (let i = 0; i < numProjects; i++) {
-    const tasks: Task[] = [];
-    const projectId = i + 1;
-
-    for (let j = 0; j < numTasksPerProject; j++) {
-      // Generate random dates
-      let startDate = faker.date.between(startOfWeek(new Date()), addDays(new Date(), 7));
-      startDate = new Date(startDate.setHours(0, 0, 0, 0)); // Set startDate to the start of the day
-
-      let endDate = addDays(startDate, faker.datatype.number({ min: 1, max: 7 }));
-      endDate = new Date(endDate.setHours(0, 0, 0, 0)); // Set endDate to the start of the day
-
-      tasks.push({
-        id: taskIdCounter++, // Ensure unique task IDs
-        worker: workers[faker.datatype.number({ min: 0, max: workers.length - 1 })],
-        title: faker.lorem.words(),
-        startDate,
-        endDate,
-        projectId,
-      });
-    }
-
-    projects.push({
-      id: projectId,
-      name: faker.company.name(),
-      tasks,
-      tags: [faker.lorem.word(), faker.lorem.word()],
-      color: colors[i % colors.length],
-    });
-  }
-
-  return projects;
-};
-
-const GroupViewPage = () => {
-  const { group_id } = useParams<{ group_id: string }>();
-  const location = useLocation();
   const navigate = useNavigate();
-  const {
-    group_name = 'Unknown Group',
-    owner_name = 'Unknown Owner',
-    user_name = 'Unknown User',
-  } = (location.state || {}) as LocationState;
-
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [openAddTaskDialog, setOpenAddTaskDialog] = useState(false);
-  const timelineRef = useRef<HTMLDivElement | null>(null);
-  const [timeline, setTimeline] = useState<any>(null);
 
   useEffect(() => {
-    const generatedProjects = generateDummyData(5, 10);
-    setProjects(generatedProjects);
-  }, []);
+    fetch('/backend/api-login/auto-login', {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({})
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        setUserName(data.username);
+        fetchGroups();
+      } else {
+        navigate('/login');
+      }
+    });
+  }, [navigate]);
 
-  useEffect(() => {
-    if (timelineRef.current && projects.length) {
-      const tasks = projects.flatMap(project => project.tasks);
-      const groups = new DataSet(
-        [...new Set(tasks.map(task => task.worker))].map((worker, index) => ({
-          id: index + 1,
-          content: worker,
-        }))
-      );
+  const fetchGroups = () => {
+    fetch('/backend/api-group-selection/group-list')
+      .then(response => response.json())
+      .then(data => {
+        console.log(data);
+        setGroups(data.groups);
+      })
+      .catch(error => console.error('Error:', error));
+  };
 
-      const items = new DataSet(
-        tasks.map(task => {
-          const project = projects.find(project => project.id === task.projectId);
-          return {
-            id: task.id,
-            group: [...new Set(tasks.map(t => t.worker))].indexOf(task.worker) + 1,
-            content: task.title,
-            start: task.startDate,
-            end: task.endDate,
-            className: `vis-item ${project?.color}`, // Apply the custom CSS class
-            projectName: project?.name,
-          };
-        })
-      );
 
-      const timelineInstance = new Timeline(timelineRef.current, items, groups, {
-        stack: true,
-        editable: {
-          add: false,         // add new items by double tapping
-          updateTime: true,  // drag items horizontally
-          updateGroup: true, // drag items from one group to another
-          remove: true,       // delete an item by tapping the delete button top right
-          overrideItems: false  // allow these options to override item.editable
-        },
-        margin: {
-          item: 10,
-          axis: 5,
-        },
-        orientation: { axis: 'top' },
-        zoomable: false, // Disable zooming
-        showWeekScale: true,
-        locale: 'en',
-        verticalScroll: true,
-        snap: (date) => {
-          return moment(date).startOf('day').toDate();
-        }
-      });
+  // const fetchGroups = () => {
+  //   fetch('/backend/api-group-selection/group-list', {
+  //     method: 'GET',
+  //     credentials: 'include', // Ensure credentials are included
+  //     headers: { 'Content-Type': 'application/json' }
+  //   })
+  //   .then(response => response.json())
+  //   .then(data => {
+  //     const sortedGroups = data.groups.sort((a: Group, b: Group) => (b.writeable ? 1 : 0) - (a.writeable ? 1 : 0));
+  //     setGroups(sortedGroups);
+  //   })
+  //   .catch(error => {
+  //     console.error('Error fetching groups:', error);
+  //     // Handle error appropriately
+  //   });
+  // };
 
-      // Set initial view to "week view"
-      timelineInstance.setOptions({
-        moment: (date: MomentInput) => moment(date as Date).utcOffset(9),
-        start: moment().startOf('week').toDate(),
-        end: moment().startOf('week').add(1, 'week').toDate(),
-        timeAxis: { scale: 'day', step: 1 },
-        showWeekScale: true,
-      });
+  const handleGroupClick = (group: Group) => {
+    navigate(`/group/${group.group_name}`, { state: { group_name: group.group_name, owner_name: group.owner_username, user_name: userName } });
+  };
 
-      timelineInstance.on('rangechange', (props) => {
-        timelineInstance.setWindow(props.start, props.end, { animation: false });
-      });
+  const handleClickOpen = () => {
+    setOpen(true);
+  };
 
-      timelineInstance.on('doubleClick', (props) => {
-        if (props.item) {
-          const item = items.get(props.item);
-          const project = projects.find(p => p.name === item.projectName);
-          navigate(`/project/${encodeURIComponent(project?.name || '')}`, { state: { project } });
-        } else if (props.group) {
-          const group = groups.get(props.group);
-          console.log(group);
-        } else {
-          alert('Double-clicked on an empty space or axis.');
-        }
-      });
+  const handleClose = () => {
+    setOpen(false);
+  };
 
-      setTimeline(timelineInstance);
-    }
-  }, [projects]);
+  const handleAddGroup = () => {
+    fetch('/backend/api-group-selection/add-group', {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ group_name: newGroupName })
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        fetchGroups();
+        handleClose();
+      } else {
+        console.error('Group creation failed:', data.message);
+      }
+    });
+  };
 
   const handleLogout = () => {
     fetch('/backend/api-login/logout', {
@@ -195,108 +132,74 @@ const GroupViewPage = () => {
     });
   };
 
-  const handleViewChange = (view: string) => {
-    if (timeline) {
-      let start, end, timeAxis;
-      switch (view) {
-        case 'week':
-          start = moment().startOf('week').toDate();
-          end = moment().startOf('week').add(1, 'week').toDate();
-          timeAxis = { scale: 'day', step: 1 };
-          timeline.setOptions({ showWeekScale: true });
-          break;
-        case 'month':
-          start = moment().startOf('month').toDate();
-          end = moment().endOf('month').toDate();
-          timeAxis = { scale: 'day', step: 7 }; // Show weeks within the month view
-          timeline.setOptions({ showWeekScale: false });
-          break;
-        case 'quarter':
-          start = moment().startOf('quarter').toDate();
-          end = moment().endOf('quarter').toDate();
-          timeAxis = { scale: 'month', step: 1 };
-          timeline.setOptions({ showWeekScale: false });
-          break;
-        default:
-          start = moment().startOf('week').toDate();
-          end = moment().startOf('week').add(1, 'month').toDate();
-          timeAxis = { scale: 'day', step: 1 };
-          timeline.setOptions({ showWeekScale: true });
-      }
-      timeline.setOptions({ timeAxis });
-      timeline.setWindow(start, end, { animation: false });
-    }
-  };
-  const handleTaskSubmit = (newTask: { worker: string; title: string; startDate: string; endDate: string }) => {
-    const updatedProjects = [...projects];
-    const projectId = updatedProjects[0].id; // For simplicity, adding to the first project
-
-    const newTaskObject: Task = {
-      id: Math.max(...updatedProjects.flatMap(p => p.tasks.map(t => t.id))) + 1,
-      worker: newTask.worker,
-      title: newTask.title,
-      startDate: new Date(newTask.startDate),
-      endDate: new Date(newTask.endDate),
-      projectId: projectId,
-    };
-
-    updatedProjects[0].tasks.push(newTaskObject);
-    setProjects(updatedProjects);
-
-    // Annotate the backend call
-    // fetch('/backend/api/task', {
-    //   method: 'POST',
-    //   headers: {
-    //     'Content-Type': 'application/json',
-    //   },
-    //   body: JSON.stringify(newTaskObject),
-    // })
-    // .then(response => response.json())
-    // .then(data => {
-    //   console.log('Task added:', data);
-    // })
-    // .catch(error => {
-    //   console.error('Error adding task:', error);
-    // });
-  };
-
   return (
-    <Container maxWidth="lg">
+    <Container maxWidth="md">
       <AppBar position="static">
         <Toolbar>
-          <Typography variant="h6" sx={{ flexGrow: 1 }}>
-            Welcome, {user_name}
+          <Typography variant="h6" style={{ flexGrow: 1 }}>
+            Welcome, {userName}
           </Typography>
           <Button color="inherit" onClick={handleLogout}>
             Logout
           </Button>
         </Toolbar>
       </AppBar>
-      <Paper sx={{ mt: 4, p: 2 }}>
-        <Typography variant="h4" component="h1" gutterBottom align="center">
-          Group: {group_name}
+      <Box display="flex" flexDirection="column" alignItems="center" justifyContent="center" minHeight="100vh" paddingTop={2}>
+        <Typography variant="h5" component="h2" gutterBottom>
+          Your Groups
         </Typography>
-        <Typography variant="h6" component="h2" gutterBottom align="center">
-          Owner: {owner_name}
-        </Typography>
-        <ButtonGroup variant="contained" color="primary" sx={{ mb: 2, justifyContent: 'center' }} fullWidth>
-          <Button onClick={() => handleViewChange('week')}>Week View</Button>
-          <Button onClick={() => handleViewChange('month')}>Month View</Button>
-          <Button onClick={() => handleViewChange('quarter')}>Quarter View</Button>
-        </ButtonGroup>
-        <Button variant="contained" color="secondary" onClick={() => setOpenAddTaskDialog(true)}>
-          Add Task
-        </Button>
-        <div ref={timelineRef} style={{ height: '400px' }}></div>
-      </Paper>
-      <AddTaskDialog
-        open={openAddTaskDialog}
-        onClose={() => setOpenAddTaskDialog(false)}
-        onSubmit={handleTaskSubmit}
-        workers={[...new Set(projects.flatMap(project => project.tasks.map(task => task.worker)))]}
-      />
+        <Grid container spacing={2}>
+          {groups.map((group, index) => (
+            <Grid item xs={12} key={index}>
+              <Button
+                variant="contained"
+                fullWidth
+                onClick={() => handleGroupClick(group)}
+              >
+                <Box display="flex" flexDirection="column" alignItems="flex-start">
+                  <Typography variant="h6">{group.group_name}</Typography>
+                  <Typography variant="body2">Owner: {group.owner_username}</Typography>
+                  <Typography variant="body2">Writeable: {group.writeable ? 'Yes' : 'No'}</Typography>
+                </Box>
+              </Button>
+            </Grid>
+          ))}
+        </Grid>
+        <Fab
+          color="primary"
+          aria-label="add"
+          style={{ position: 'absolute', bottom: 16, right: 16 }}
+          onClick={handleClickOpen}
+        >
+          <AddIcon />
+        </Fab>
+        <Dialog open={open} onClose={handleClose}>
+          <DialogTitle>Add New Group</DialogTitle>
+          <DialogContent>
+            <DialogContentText>
+              Please enter the group name.
+            </DialogContentText>
+            <TextField
+              autoFocus
+              margin="dense"
+              label="Group Name"
+              fullWidth
+              value={newGroupName}
+              onChange={(e) => setNewGroupName(e.target.value)}
+            />
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleClose} color="secondary">
+              Cancel
+            </Button>
+            <Button onClick={handleAddGroup} color="primary">
+              Add
+            </Button>
+          </DialogActions>
+        </Dialog>
+      </Box>
     </Container>
   );
 };
 
-export default GroupViewPage;
+export default GroupSelectionPage;

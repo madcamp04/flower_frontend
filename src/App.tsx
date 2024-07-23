@@ -5,7 +5,7 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import GroupSelectionPage from './pages/GroupSelectionPage';
-import GroupViewPage from './pages/GroupViewPage';
+import GroupViewPage from './pages/GroupViewPage/GroupViewPage';
 import ProjectViewPage from './pages/ProjectViewPage';
 
 const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
@@ -67,7 +67,7 @@ const App = () => {
           }
         />
         <Route
-          path="/group/:group_id"
+          path="/group/:group_name"
           element={
             <ProtectedRoute>
               <GroupViewPage />
