@@ -2,16 +2,17 @@ import React, { useEffect, useRef } from 'react';
 import { DataSet, Timeline } from 'vis-timeline/standalone';
 import moment from 'moment';
 import 'vis-timeline/styles/vis-timeline-graph2d.min.css';
-import { Project } from './utils';
+import { Project, Worker } from './utils';
 
 interface TimelineComponentProps {
   projects: Project[];
+  workers: Worker[];
   setTimeline: (timeline: any) => void;
   navigate: any;
   activeTags: string[];
 }
 
-const TimelineComponent: React.FC<TimelineComponentProps> = ({ projects, setTimeline, navigate, activeTags }) => {
+const TimelineComponent: React.FC<TimelineComponentProps> = ({ projects, workers, setTimeline, navigate, activeTags }) => {
   const timelineRef = useRef<HTMLDivElement | null>(null);
   const timelineInstanceRef = useRef<Timeline | null>(null);
 
@@ -20,9 +21,9 @@ const TimelineComponent: React.FC<TimelineComponentProps> = ({ projects, setTime
       const tasks = projects.flatMap(project => project.tasks);
 
       const groups = new DataSet(
-        [...new Set(tasks.map(task => task.worker_name))].map((worker, index) => ({
+        workers.map((worker, index) => ({
           id: index + 1,
-          content: worker,
+          content: worker.user_name,
         }))
       );
 
@@ -31,7 +32,7 @@ const TimelineComponent: React.FC<TimelineComponentProps> = ({ projects, setTime
           const project = projects.find(project => project.project_name === task.project_name);
           return {
             id: task.task_title,
-            group: [...new Set(tasks.map(t => t.worker_name))].indexOf(task.worker_name) + 1,
+            group: workers.findIndex(worker => worker.user_name === task.worker_name) + 1,
             content: task.task_title,
             start: task.start_date,
             end: task.end_date,
@@ -83,7 +84,7 @@ const TimelineComponent: React.FC<TimelineComponentProps> = ({ projects, setTime
         timelineInstanceRef.current = timelineInstance;
       }
     }
-  }, [projects, activeTags]);
+  }, [projects, workers, activeTags]);
 
   useEffect(() => {
     return () => {

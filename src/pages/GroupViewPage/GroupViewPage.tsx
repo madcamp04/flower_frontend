@@ -99,6 +99,7 @@ const GroupViewPage: React.FC = () => {
         <ViewButtons timeline={timeline} />
         <TimelineComponent
           projects={projects}
+          workers={workers} // Pass workers to the TimelineComponent
           setTimeline={setTimeline}
           navigate={navigate}
           activeTags={activeTags}
