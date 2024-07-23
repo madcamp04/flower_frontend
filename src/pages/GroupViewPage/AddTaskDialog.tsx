@@ -67,13 +67,11 @@ const AddTaskDialog: React.FC<AddTaskDialogProps> = ({ open, onClose, onSubmit, 
             label="Start Date"
             value={startDate}
             onChange={(newValue) => setStartDate(newValue)}
-            // renderInput={(params) => <TextField {...params} fullWidth margin="normal" />}
           />
           <DatePicker
             label="End Date"
             value={endDate}
             onChange={(newValue) => setEndDate(newValue)}
-            // renderInput={(params) => <TextField {...params} fullWidth margin="normal" />}
           />
         </LocalizationProvider>
       </DialogContent>

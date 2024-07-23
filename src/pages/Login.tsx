@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { Container, TextField, Button, Typography, Box, Checkbox, FormControlLabel } from '@mui/material';
+import { useAppContext } from '../context/AppContext';
 
 const Login = () => {
   const [id, setId] = useState('');
@@ -8,6 +9,7 @@ const Login = () => {
   const [autoLogin, setAutoLogin] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+  const { setUserName } = useAppContext();
   const from = location.state?.from?.pathname || '/group-selection';
 
   const handleLogin = () => {
@@ -15,22 +17,21 @@ const Login = () => {
       method: 'POST',
       credentials: 'include',
       headers: {
-        'Content-Type': 'application/json', // Ensure Content-Type is set
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify({ username: id, password, remember_me: autoLogin })
     })
     .then(response => response.json())
     .then(data => {
-      console.log("Login response:", data);
       if (data.success) {
-        console.log("Login successful go to ", from);
+        setUserName(data.username);
         navigate(from, { replace: true });
       } else {
         alert('Invalid credentials');
       }
     })
-    .catch(error => {
-      console.error("Login error:", error);
+    .catch(() => {
+      alert('Login error');
     });
   };
 

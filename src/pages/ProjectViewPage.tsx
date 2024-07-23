@@ -1,6 +1,7 @@
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Container, Typography, Paper, List, ListItem, ListItemText, AppBar, Toolbar, Button } from '@mui/material';
+import { useAppContext } from '../context/AppContext';
 
 interface Task {
   id: number;
@@ -25,7 +26,10 @@ interface LocationState {
 const ProjectViewPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const { setProjectName } = useAppContext();
   const { project } = location.state as LocationState;
+
+  setProjectName(project.name);
 
   const handleLogout = () => {
     fetch('/backend/api-login/logout', {
@@ -37,16 +41,10 @@ const ProjectViewPage = () => {
       body: JSON.stringify({})
     })
     .then(response => response.json())
-    .then(data => {
-      if (data.success) {
-        navigate('/login');
-      } else {
-        console.error('Logout failed:', data.message);
-        navigate('/login');
-      }
+    .then(() => {
+      navigate('/login');
     })
-    .catch(error => {
-      console.error('Logout error:', error);
+    .catch(() => {
       navigate('/login');
     });
   };

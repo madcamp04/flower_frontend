@@ -1,23 +1,24 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Container, Typography, Paper } from '@mui/material';
+import { Container, Typography, Paper, Button } from '@mui/material';
 import Header from './Header';
 import TimelineComponent from './TimelineComponent';
 import ViewButtons from './ViewButtons';
 import AddTaskDialog from './AddTaskDialog';
 import { generateDummyData, Project, Task } from './utils';
+import { useAppContext } from '../../context/AppContext';
 import './GroupViewPage.css';
-
-interface LocationState {
-  group_name?: string;
-  owner_name?: string;
-  user_name?: string;
-}
 
 const GroupViewPage: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { group_name = 'Unknown Group', owner_name = 'Unknown Owner', user_name = 'Unknown User' } = (location.state || {}) as LocationState;
+  const { groupName, setGroupName, groupOwner, setGroupOwner, userName } = useAppContext();
+  const { group_name = 'Unknown Group', owner_name = 'Unknown Owner' } = (location.state || {}) as any;
+
+  useEffect(() => {
+    if (group_name) setGroupName(group_name);
+    if (owner_name) setGroupOwner(owner_name);
+  }, [group_name, owner_name, setGroupName, setGroupOwner]);
 
   const [projects, setProjects] = useState<Project[]>([]);
   const [openAddTaskDialog, setOpenAddTaskDialog] = useState(false);
@@ -39,10 +40,10 @@ const GroupViewPage: React.FC = () => {
       body: JSON.stringify({}),
     })
       .then(response => response.json())
-      .then(data => {
+      .then(() => {
         navigate('/login');
       })
-      .catch(error => {
+      .catch(() => {
         navigate('/login');
       });
   };
@@ -66,10 +67,13 @@ const GroupViewPage: React.FC = () => {
 
   return (
     <Container maxWidth="lg">
-      <Header user_name={user_name} onLogout={handleLogout} />
+      <Header user_name={userName} onLogout={handleLogout} />
       <Paper sx={{ mt: 4, p: 2 }}>
-        <Typography variant="h4" align="center">Group: {group_name}</Typography>
-        <Typography variant="h6" align="center">Owner: {owner_name}</Typography>
+        <Typography variant="h4" align="center">Group: {groupName}</Typography>
+        <Typography variant="h6" align="center">Owner: {groupOwner}</Typography>
+        <Button onClick={() => setOpenAddTaskDialog(true)} variant="contained" color="primary" sx={{ mt: 2 }}>
+          Add Task
+        </Button>
         <ViewButtons timeline={timeline} />
         <TimelineComponent ref={timelineRef} projects={projects} setTimeline={setTimeline} navigate={navigate} />
         <AddTaskDialog

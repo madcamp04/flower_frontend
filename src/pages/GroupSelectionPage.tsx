@@ -17,6 +17,7 @@ import {
   Toolbar,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
+import { useAppContext } from '../context/AppContext';
 
 interface Group {
   group_name: string;
@@ -25,7 +26,7 @@ interface Group {
 }
 
 const GroupSelectionPage = () => {
-  const [userName, setUserName] = useState<string>('');
+  const { userName, setGroupName, setGroupOwner } = useAppContext();
   const [groups, setGroups] = useState<Group[]>([]);
   const [open, setOpen] = useState<boolean>(false);
   const [newGroupName, setNewGroupName] = useState<string>('');
@@ -33,25 +34,16 @@ const GroupSelectionPage = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetch('/backend/api-login/auto-login', {
+    fetchGroups();
+  }, []);
+
+  const fetchGroups = () => {
+    fetch('/backend/api-group-selection/group-list', {
       method: 'POST',
       credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({})
     })
-    .then(response => response.json())
-    .then(data => {
-      if (data.success) {
-        setUserName(data.username);
-        fetchGroups();
-      } else {
-        navigate('/login');
-      }
-    });
-  }, [navigate]);
-
-  const fetchGroups = () => {
-    fetch('/backend/api-group-selection/group-list')
       .then(response => response.json())
       .then(data => {
         console.log(data);
@@ -60,26 +52,10 @@ const GroupSelectionPage = () => {
       .catch(error => console.error('Error:', error));
   };
 
-
-  // const fetchGroups = () => {
-  //   fetch('/backend/api-group-selection/group-list', {
-  //     method: 'GET',
-  //     credentials: 'include', // Ensure credentials are included
-  //     headers: { 'Content-Type': 'application/json' }
-  //   })
-  //   .then(response => response.json())
-  //   .then(data => {
-  //     const sortedGroups = data.groups.sort((a: Group, b: Group) => (b.writeable ? 1 : 0) - (a.writeable ? 1 : 0));
-  //     setGroups(sortedGroups);
-  //   })
-  //   .catch(error => {
-  //     console.error('Error fetching groups:', error);
-  //     // Handle error appropriately
-  //   });
-  // };
-
   const handleGroupClick = (group: Group) => {
-    navigate(`/group/${group.group_name}`, { state: { group_name: group.group_name, owner_name: group.owner_username, user_name: userName } });
+    setGroupName(group.group_name);
+    setGroupOwner(group.owner_username);
+    navigate(`/group/${group.group_name}`);
   };
 
   const handleClickOpen = () => {
@@ -118,16 +94,10 @@ const GroupSelectionPage = () => {
       body: JSON.stringify({})
     })
     .then(response => response.json())
-    .then(data => {
-      if (data.success) {
-        navigate('/login');
-      } else {
-        console.error('Logout failed:', data.message);
-        navigate('/login');
-      }
+    .then(() => {
+      navigate('/login');
     })
-    .catch(error => {
-      console.error('Logout error:', error);
+    .catch(() => {
       navigate('/login');
     });
   };

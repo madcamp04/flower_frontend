@@ -44,15 +44,15 @@ const TimelineComponent = forwardRef<HTMLDivElement, TimelineComponentProps>(({ 
         locale: 'en',
         verticalScroll: true,
         snap: (date) => moment(date).startOf('day').toDate(),
+        moment: (date: moment.MomentInput) => moment(date).utcOffset(9),
       });
-
-    timelineInstance.setOptions({
-      moment: (date: Date) => moment(date).utcOffset(9).toDate(),
-      start: moment().startOf('week').toDate(),
-      end: moment().startOf('week').add(1, 'week').toDate(),
-      timeAxis: { scale: 'day', step: 1 },
-      showWeekScale: true,
-    });
+      
+      timelineInstance.setOptions({
+        start: moment().startOf('week').toDate(),
+        end: moment().startOf('week').add(1, 'week').toDate(),
+        timeAxis: { scale: 'day', step: 1 },
+        showWeekScale: true,
+      });
 
       timelineInstance.on('rangechange', (props) => {
         timelineInstance.setWindow(props.start, props.end, { animation: false });
