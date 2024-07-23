@@ -9,7 +9,6 @@ interface TagsSelectorProps {
 
 const TagsSelector: React.FC<TagsSelectorProps> = ({ tags, activeTags, setActiveTags }) => {
   const handleChange = (event: React.ChangeEvent<{ value: string[] }>) => {
-    console.log("asdf");
     setActiveTags(event.target.value);
   };
 
