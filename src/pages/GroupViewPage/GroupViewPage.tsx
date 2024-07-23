@@ -5,7 +5,8 @@ import Header from './Header';
 import TimelineComponent from './TimelineComponent';
 import ViewButtons from './ViewButtons';
 import AddTaskDialog from './AddTaskDialog';
-import AddWorkerDialog from './AddWorkerDialog'; // Import the new component
+import AddWorkerDialog from './AddWorkerDialog';
+import AddProjectDialog from './AddProjectDialog'; // Import the new component
 import TagsSelector from './TagsSelector';
 import { generateDummyData, Project, Task, Worker } from './utils';
 import { useAppContext } from '../../context/AppContext';
@@ -19,7 +20,8 @@ const GroupViewPage: React.FC = () => {
   const [projects, setProjects] = useState<Project[]>([]);
   const [workers, setWorkers] = useState<Worker[]>([]);
   const [openAddTaskDialog, setOpenAddTaskDialog] = useState(false);
-  const [openAddWorkerDialog, setOpenAddWorkerDialog] = useState(false); // State for AddWorkerDialog
+  const [openAddWorkerDialog, setOpenAddWorkerDialog] = useState(false);
+  const [openAddProjectDialog, setOpenAddProjectDialog] = useState(false); // State for AddProjectDialog
   const [timeline, setTimeline] = useState<any>(null);
   const [activeTags, setActiveTags] = useState<string[]>([]);
 
@@ -71,6 +73,10 @@ const GroupViewPage: React.FC = () => {
     setWorkers(prevWorkers => [...prevWorkers, newWorker]);
   };
 
+  const handleProjectSubmit = (newProject: Project) => {
+    setProjects(prevProjects => [...prevProjects, newProject]);
+  };
+
   const allTags = Array.from(new Set(projects.flatMap(project => project.tags)));
   const projectNames = projects.map(project => project.project_name);
 
@@ -85,6 +91,9 @@ const GroupViewPage: React.FC = () => {
         </Button>
         <Button onClick={() => setOpenAddWorkerDialog(true)} variant="contained" color="secondary" sx={{ mt: 2, ml: 2 }}>
           Add Worker
+        </Button>
+        <Button onClick={() => setOpenAddProjectDialog(true)} variant="contained" sx={{ mt: 2, ml: 2, backgroundColor: '#388e3c', color: 'white' }}>
+          Add Project
         </Button>
         <TagsSelector tags={allTags} activeTags={activeTags} setActiveTags={setActiveTags} />
         <ViewButtons timeline={timeline} />
@@ -105,6 +114,12 @@ const GroupViewPage: React.FC = () => {
           open={openAddWorkerDialog}
           onClose={() => setOpenAddWorkerDialog(false)}
           onSubmit={handleWorkerSubmit}
+        />
+        <AddProjectDialog
+          open={openAddProjectDialog}
+          onClose={() => setOpenAddProjectDialog(false)}
+          onSubmit={handleProjectSubmit}
+          existingTags={allTags}
         />
       </Paper>
     </Container>
