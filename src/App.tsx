@@ -10,7 +10,7 @@ import ProjectViewPage from './pages/ProjectViewPage';
 import { AppProvider, useAppContext } from './context/AppContext';
 
 const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
-  const { setUserName } = useAppContext();
+  const { setUserName, userName } = useAppContext();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -27,7 +27,7 @@ const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
     .then(data => {
       if (data.success) {
         setIsAuthenticated(true);
-        setUserName(data.user_name); // Set user name in context
+        setUserName(data.username); // Set user name in context
       } else {
         setIsAuthenticated(false);
       }

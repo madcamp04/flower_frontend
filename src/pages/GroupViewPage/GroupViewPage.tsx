@@ -13,12 +13,6 @@ const GroupViewPage: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { groupName, setGroupName, groupOwner, setGroupOwner, userName } = useAppContext();
-  const { group_name = 'Unknown Group', owner_name = 'Unknown Owner' } = (location.state || {}) as any;
-
-  useEffect(() => {
-    if (group_name) setGroupName(group_name);
-    if (owner_name) setGroupOwner(owner_name);
-  }, [group_name, owner_name, setGroupName, setGroupOwner]);
 
   const [projects, setProjects] = useState<Project[]>([]);
   const [openAddTaskDialog, setOpenAddTaskDialog] = useState(false);
