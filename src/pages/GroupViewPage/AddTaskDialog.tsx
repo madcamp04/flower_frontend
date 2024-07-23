@@ -17,26 +17,27 @@ interface AddTaskDialogProps {
   onClose: () => void;
   onSubmit: (newTask: { worker_name: string; task_title: string; start_date: string; end_date: string; description: string; project_name: string; tag_color: string[] }) => void;
   workers: string[];
-  projectName: string;
+  projectNames: string[];
 }
 
-const AddTaskDialog: React.FC<AddTaskDialogProps> = ({ open, onClose, onSubmit, workers, projectName }) => {
-  const [worker, setWorker] = useState('');
-  const [title, setTitle] = useState('');
-  const [startDate, setStartDate] = useState<Date | null>(null);
-  const [endDate, setEndDate] = useState<Date | null>(null);
+const AddTaskDialog: React.FC<AddTaskDialogProps> = ({ open, onClose, onSubmit, workers, projectNames }) => {
+  const [worker_name, setWorkerName] = useState('');
+  const [task_title, setTaskTitle] = useState('');
   const [description, setDescription] = useState('');
+  const [start_date, setStartDate] = useState<Date | null>(null);
+  const [end_date, setEndDate] = useState<Date | null>(null);
+  const [project_name, setProjectName] = useState('');
 
   const handleSubmit = () => {
-    if (worker && title && startDate && endDate) {
+    if (worker_name && task_title && description && start_date && end_date && project_name) {
       onSubmit({
-        worker_name: worker,
-        task_title: title,
-        start_date: startDate.toISOString().split('T')[0],
-        end_date: endDate.toISOString().split('T')[0],
+        worker_name,
+        task_title,
+        start_date: start_date.toISOString().split('T')[0],
+        end_date: end_date.toISOString().split('T')[0],
         description,
-        project_name: projectName,
-        tag_color: ['#FFCDD2'], // Example color, adjust as needed
+        project_name,
+        tag_color: ['#FF0000'], // Example color, this can be dynamically set
       });
       onClose();
     }
@@ -49,8 +50,8 @@ const AddTaskDialog: React.FC<AddTaskDialogProps> = ({ open, onClose, onSubmit, 
         <TextField
           select
           label="Worker Name"
-          value={worker}
-          onChange={(e) => setWorker(e.target.value)}
+          value={worker_name}
+          onChange={(e) => setWorkerName(e.target.value)}
           fullWidth
           margin="normal"
         >
@@ -62,8 +63,8 @@ const AddTaskDialog: React.FC<AddTaskDialogProps> = ({ open, onClose, onSubmit, 
         </TextField>
         <TextField
           label="Task Name"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
+          value={task_title}
+          onChange={(e) => setTaskTitle(e.target.value)}
           fullWidth
           margin="normal"
         />
@@ -74,15 +75,29 @@ const AddTaskDialog: React.FC<AddTaskDialogProps> = ({ open, onClose, onSubmit, 
           fullWidth
           margin="normal"
         />
+        <TextField
+          select
+          label="Project Name"
+          value={project_name}
+          onChange={(e) => setProjectName(e.target.value)}
+          fullWidth
+          margin="normal"
+        >
+          {projectNames.map((name) => (
+            <MenuItem key={name} value={name}>
+              {name}
+            </MenuItem>
+          ))}
+        </TextField>
         <LocalizationProvider dateAdapter={AdapterDateFns}>
           <DatePicker
             label="Start Date"
-            value={startDate}
+            value={start_date}
             onChange={(newValue) => setStartDate(newValue)}
           />
           <DatePicker
             label="End Date"
-            value={endDate}
+            value={end_date}
             onChange={(newValue) => setEndDate(newValue)}
           />
         </LocalizationProvider>
