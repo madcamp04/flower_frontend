@@ -3,6 +3,7 @@ import { DataSet, Timeline } from 'vis-timeline/standalone';
 import moment from 'moment';
 import 'vis-timeline/styles/vis-timeline-graph2d.min.css';
 import { Project } from './utils';
+import { useAppContext } from '../../context/AppContext';
 
 interface TimelineComponentProps {
   projects: Project[];
@@ -11,25 +12,26 @@ interface TimelineComponentProps {
 }
 
 const TimelineComponent = forwardRef<HTMLDivElement, TimelineComponentProps>(({ projects, setTimeline, navigate }, ref) => {
+  const { projectName } = useAppContext();
+
   useEffect(() => {
     if (ref && 'current' in ref && ref.current && projects.length) {
       const tasks = projects.flatMap(project => project.tasks);
-      const groups = new DataSet([...new Set(tasks.map(task => task.worker))].map((worker, index) => ({
+      const groups = new DataSet([...new Set(tasks.map(task => task.worker_name))].map((worker, index) => ({
         id: index + 1,
         content: worker,
       })));
 
       const items = new DataSet(
         tasks.map(task => {
-          const project = projects.find(project => project.id === task.projectId);
           return {
-            id: task.id,
-            group: [...new Set(tasks.map(t => t.worker))].indexOf(task.worker) + 1,
-            content: task.title,
-            start: task.startDate,
-            end: task.endDate,
-            className: `vis-item ${project?.color}`,
-            projectName: project?.name,
+            id: task.task_title,
+            group: [...new Set(tasks.map(t => t.worker_name))].indexOf(task.worker_name) + 1,
+            content: task.task_title,
+            start: task.start_date,
+            end: task.end_date,
+            className: `vis-item ${task.tag_color[0]}`, // Using the first color for the item
+            projectName: task.project_name,
           };
         })
       );
@@ -46,7 +48,7 @@ const TimelineComponent = forwardRef<HTMLDivElement, TimelineComponentProps>(({ 
         snap: (date) => moment(date).startOf('day').toDate(),
         moment: (date: moment.MomentInput) => moment(date).utcOffset(9),
       });
-      
+
       timelineInstance.setOptions({
         start: moment().startOf('week').toDate(),
         end: moment().startOf('week').add(1, 'week').toDate(),
@@ -61,8 +63,7 @@ const TimelineComponent = forwardRef<HTMLDivElement, TimelineComponentProps>(({ 
       timelineInstance.on('doubleClick', (props) => {
         if (props.item) {
           const item = items.get(props.item);
-          const project = projects.find(p => p.name === item.projectName);
-          navigate(`/project/${encodeURIComponent(project?.name || '')}`, { state: { project } });
+          navigate(`/project/${encodeURIComponent(item.projectName || '')}`);
         } else {
           alert('Double-clicked on an empty space or axis.');
         }

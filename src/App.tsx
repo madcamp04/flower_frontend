@@ -14,7 +14,9 @@ const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
+
   useEffect(() => {
+    console.log("ProtectedRoute useEffect");
     fetch('/backend/api-login/auto-login', {
       method: 'POST',
       credentials: 'include',

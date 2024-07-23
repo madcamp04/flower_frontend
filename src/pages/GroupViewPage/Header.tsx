@@ -2,15 +2,15 @@ import React from 'react';
 import { AppBar, Toolbar, Typography, Button } from '@mui/material';
 
 interface HeaderProps {
-  user_name: string;
+  userName: string;
   onLogout: () => void;
 }
 
-const Header: React.FC<HeaderProps> = ({ user_name, onLogout }) => (
+const Header: React.FC<HeaderProps> = ({ userName, onLogout }) => (
   <AppBar position="static">
     <Toolbar>
       <Typography variant="h6" sx={{ flexGrow: 1 }}>
-        Welcome, {user_name}
+        Welcome, {userName}
       </Typography>
       <Button color="inherit" onClick={onLogout}>
         Logout

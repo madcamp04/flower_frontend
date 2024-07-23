@@ -55,7 +55,7 @@ const GroupSelectionPage = () => {
   const handleGroupClick = (group: Group) => {
     setGroupName(group.group_name);
     setGroupOwner(group.owner_username);
-    navigate(`/group/${group.group_name}`);
+    navigate(`/group/${encodeURIComponent(group.group_name)}`);
   };
 
   const handleClickOpen = () => {

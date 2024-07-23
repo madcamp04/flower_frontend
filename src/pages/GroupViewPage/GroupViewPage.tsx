@@ -12,7 +12,7 @@ import './GroupViewPage.css';
 const GroupViewPage: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { groupName, setGroupName, groupOwner, setGroupOwner, userName } = useAppContext();
+  const { groupName, setGroupName, groupOwner, setGroupOwner, userName, projectName, setProjectName, setTaskName } = useAppContext();
 
   const [projects, setProjects] = useState<Project[]>([]);
   const [openAddTaskDialog, setOpenAddTaskDialog] = useState(false);
@@ -42,26 +42,29 @@ const GroupViewPage: React.FC = () => {
       });
   };
 
-  const handleTaskSubmit = (newTask: { worker: string; title: string; startDate: string; endDate: string }) => {
+  const handleTaskSubmit = (newTask: { worker_name: string; task_title: string; start_date: string; end_date: string; description: string; project_name: string; tag_color: string[] }) => {
     const updatedProjects = [...projects];
-    const projectId = updatedProjects[0].id;
+    const projectIndex = updatedProjects.findIndex(project => project.project_name === newTask.project_name);
+    
+    if (projectIndex >= 0) {
+      const newTaskObject: Task = {
+        task_title: newTask.task_title,
+        start_date: new Date(newTask.start_date),
+        end_date: new Date(newTask.end_date),
+        worker_name: newTask.worker_name,
+        description: newTask.description,
+        project_name: newTask.project_name,
+        tag_color: newTask.tag_color,
+      };
 
-    const newTaskObject: Task = {
-      id: Math.max(...updatedProjects.flatMap(p => p.tasks.map(t => t.id))) + 1,
-      worker: newTask.worker,
-      title: newTask.title,
-      startDate: new Date(newTask.startDate),
-      endDate: new Date(newTask.endDate),
-      projectId,
-    };
-
-    updatedProjects[0].tasks.push(newTaskObject);
-    setProjects(updatedProjects);
+      updatedProjects[projectIndex].tasks.push(newTaskObject);
+      setProjects(updatedProjects);
+    }
   };
 
   return (
     <Container maxWidth="lg">
-      <Header user_name={userName} onLogout={handleLogout} />
+      <Header userName={userName} onLogout={handleLogout} />
       <Paper sx={{ mt: 4, p: 2 }}>
         <Typography variant="h4" align="center">Group: {groupName}</Typography>
         <Typography variant="h6" align="center">Owner: {groupOwner}</Typography>
@@ -74,7 +77,8 @@ const GroupViewPage: React.FC = () => {
           open={openAddTaskDialog}
           onClose={() => setOpenAddTaskDialog(false)}
           onSubmit={handleTaskSubmit}
-          workers={[...new Set(projects.flatMap(project => project.tasks.map(task => task.worker)))]}
+          workers={[...new Set(projects.flatMap(project => project.tasks.map(task => task.worker_name)))]}
+          projectName={projectName}
         />
       </Paper>
     </Container>
