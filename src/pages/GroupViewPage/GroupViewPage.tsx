@@ -1,98 +1,114 @@
-import React, { useEffect, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
-import { Container, Typography, Paper, Button } from '@mui/material';
-import Header from './Header';
-import TimelineComponent from './TimelineComponent';
-import ViewButtons from './ViewButtons';
-import AddTaskDialog from './AddTaskDialog';
-import TagsSelector from './TagsSelector';
-import { generateDummyData, Project, Task } from './utils';
-import { useAppContext } from '../../context/AppContext';
-import './GroupViewPage.css';
+import React, { useState } from 'react';
+import {
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Button,
+  TextField,
+  MenuItem,
+} from '@mui/material';
+import { DatePicker } from '@mui/x-date-pickers';
+import { LocalizationProvider } from '@mui/x-date-pickers';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { Worker } from './utils';
 
-const GroupViewPage: React.FC = () => {
-  const location = useLocation();
-  const navigate = useNavigate();
-  const { groupName, setGroupName, groupOwner, setGroupOwner, userName } = useAppContext();
+interface AddTaskDialogProps {
+  open: boolean;
+  onClose: () => void;
+  onSubmit: (newTask: { worker_name: string; task_title: string; start_date: string; end_date: string; description: string; project_name: string; tag_color: string[] }) => void;
+  workers: Worker[];
+  projectNames: string[];
+}
 
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [openAddTaskDialog, setOpenAddTaskDialog] = useState(false);
-  const [timeline, setTimeline] = useState<any>(null);
-  const [activeTags, setActiveTags] = useState<string[]>([]);
+const AddTaskDialog: React.FC<AddTaskDialogProps> = ({ open, onClose, onSubmit, workers, projectNames }) => {
+  const [worker_name, setWorkerName] = useState('');
+  const [task_title, setTaskTitle] = useState('');
+  const [description, setDescription] = useState('');
+  const [start_date, setStartDate] = useState<Date | null>(null);
+  const [end_date, setEndDate] = useState<Date | null>(null);
+  const [project_name, setProjectName] = useState('');
 
-  useEffect(() => {
-    const generatedProjects = generateDummyData(5, 10);
-    setProjects(generatedProjects);
-  }, []);
-
-  const handleLogout = () => {
-    fetch('/backend/api-login/logout', {
-      method: 'POST',
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({}),
-    })
-      .then(response => response.json())
-      .then(() => {
-        navigate('/login');
-      })
-      .catch(() => {
-        navigate('/login');
+  const handleSubmit = () => {
+    if (worker_name && task_title && description && start_date && end_date && project_name) {
+      onSubmit({
+        worker_name,
+        task_title,
+        start_date: start_date.toISOString().split('T')[0],
+        end_date: end_date.toISOString().split('T')[0],
+        description,
+        project_name,
+        tag_color: ['#FF0000'], // Example color, this can be dynamically set
       });
-  };
-
-  const handleTaskSubmit = (newTask: { worker_name: string; task_title: string; start_date: string; end_date: string; description: string; project_name: string; tag_color: string[] }) => {
-    const updatedProjects = [...projects];
-    const projectIndex = updatedProjects.findIndex(project => project.project_name === newTask.project_name);
-
-    if (projectIndex >= 0) {
-      const newTaskObject: Task = {
-        task_title: newTask.task_title,
-        start_date: new Date(newTask.start_date),
-        end_date: new Date(newTask.end_date),
-        worker_name: newTask.worker_name,
-        description: newTask.description,
-        project_name: newTask.project_name,
-        tag_color: newTask.tag_color,
-      };
-
-      updatedProjects[projectIndex].tasks.push(newTaskObject);
-      setProjects(updatedProjects);
+      onClose();
     }
   };
 
-  const allTags = Array.from(new Set(projects.flatMap(project => project.tags)));
-  const projectNames = projects.map(project => project.project_name);
-
   return (
-    <Container maxWidth="lg">
-      <Header userName={userName} onLogout={handleLogout} />
-      <Paper sx={{ mt: 4, p: 2 }}>
-        <Typography variant="h4" align="center">Group: {groupName}</Typography>
-        <Typography variant="h6" align="center">Owner: {groupOwner}</Typography>
-        <Button onClick={() => setOpenAddTaskDialog(true)} variant="contained" color="primary" sx={{ mt: 2 }}>
-          Add Task
-        </Button>
-        <TagsSelector tags={allTags} activeTags={activeTags} setActiveTags={setActiveTags} />
-        <ViewButtons timeline={timeline} />
-        <TimelineComponent
-          projects={projects}
-          setTimeline={setTimeline}
-          navigate={navigate}
-          activeTags={activeTags}
+    <Dialog open={open} onClose={onClose}>
+      <DialogTitle>Add Task</DialogTitle>
+      <DialogContent>
+        <TextField
+          select
+          label="Worker Name"
+          value={worker_name}
+          onChange={(e) => setWorkerName(e.target.value)}
+          fullWidth
+          margin="normal"
+        >
+          {workers.map((worker) => (
+            <MenuItem key={worker.user_name} value={worker.user_name}>
+              {worker.user_name} ({worker.user_email})
+            </MenuItem>
+          ))}
+        </TextField>
+        <TextField
+          label="Task Name"
+          value={task_title}
+          onChange={(e) => setTaskTitle(e.target.value)}
+          fullWidth
+          margin="normal"
         />
-        <AddTaskDialog
-          open={openAddTaskDialog}
-          onClose={() => setOpenAddTaskDialog(false)}
-          onSubmit={handleTaskSubmit}
-          workers={[...new Set(projects.flatMap(project => project.tasks.map(task => task.worker_name)))]}
-          projectNames={projectNames}
+        <TextField
+          label="Description"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          fullWidth
+          margin="normal"
         />
-      </Paper>
-    </Container>
+        <TextField
+          select
+          label="Project Name"
+          value={project_name}
+          onChange={(e) => setProjectName(e.target.value)}
+          fullWidth
+          margin="normal"
+        >
+          {projectNames.map((name) => (
+            <MenuItem key={name} value={name}>
+              {name}
+            </MenuItem>
+          ))}
+        </TextField>
+        <LocalizationProvider dateAdapter={AdapterDateFns}>
+          <DatePicker
+            label="Start Date"
+            value={start_date}
+            onChange={(newValue) => setStartDate(newValue)}
+          />
+          <DatePicker
+            label="End Date"
+            value={end_date}
+            onChange={(newValue) => setEndDate(newValue)}
+          />
+        </LocalizationProvider>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={onClose}>Cancel</Button>
+        <Button onClick={handleSubmit} color="primary">Add Task</Button>
+      </DialogActions>
+    </Dialog>
   );
 };
 
-export default GroupViewPage;
+export default AddTaskDialog;

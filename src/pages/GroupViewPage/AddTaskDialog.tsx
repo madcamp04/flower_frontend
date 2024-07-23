@@ -11,12 +11,13 @@ import {
 import { DatePicker } from '@mui/x-date-pickers';
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { Worker } from './utils';
 
 interface AddTaskDialogProps {
   open: boolean;
   onClose: () => void;
   onSubmit: (newTask: { worker_name: string; task_title: string; start_date: string; end_date: string; description: string; project_name: string; tag_color: string[] }) => void;
-  workers: string[];
+  workers: Worker[];
   projectNames: string[];
 }
 
@@ -56,8 +57,8 @@ const AddTaskDialog: React.FC<AddTaskDialogProps> = ({ open, onClose, onSubmit, 
           margin="normal"
         >
           {workers.map((worker) => (
-            <MenuItem key={worker} value={worker}>
-              {worker}
+            <MenuItem key={worker.user_name} value={worker.user_name}>
+              {worker.user_name} ({worker.user_email})
             </MenuItem>
           ))}
         </TextField>
