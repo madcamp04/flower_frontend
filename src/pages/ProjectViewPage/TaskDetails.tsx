@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { TextField, Button, Box } from '@mui/material';
+import { TextField, Button, Box, MenuItem } from '@mui/material';
 import { LocalizationProvider, DatePicker } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { parse } from 'date-fns';
@@ -7,9 +7,10 @@ import { parse } from 'date-fns';
 interface TaskDetailsProps {
   taskDetails: any;
   onSave: (updatedTask: any) => void;
+  workers: { user_name: string; user_email: string; }[];
 }
 
-const TaskDetails: React.FC<TaskDetailsProps> = ({ taskDetails, onSave }) => {
+const TaskDetails: React.FC<TaskDetailsProps> = ({ taskDetails, onSave, workers }) => {
   const [taskTitle, setTaskTitle] = useState('');
   const [workerName, setWorkerName] = useState('');
   const [startDate, setStartDate] = useState<Date | null>(null);
@@ -21,12 +22,7 @@ const TaskDetails: React.FC<TaskDetailsProps> = ({ taskDetails, onSave }) => {
       setWorkerName(taskDetails.worker_name || '');
       setStartDate(taskDetails.start_time ? parse(taskDetails.start_time, 'yyyy-MM-dd HH:mm:ss.S', new Date()) : null);
       setEndDate(taskDetails.end_time ? parse(taskDetails.end_time, 'yyyy-MM-dd HH:mm:ss.S', new Date()) : null);
-      console.log("taskDetail", taskDetails);
-      console.log("taskDetail.start_time", taskDetails.start_time);
-      console.log("taskDetail.end_time", taskDetails.end_time);
     }
-    console.log("startDate", startDate);
-    console.log("endDate", endDate);
   }, [taskDetails]);
 
   const formatDateTime = (date: Date): string => {
@@ -59,12 +55,19 @@ const TaskDetails: React.FC<TaskDetailsProps> = ({ taskDetails, onSave }) => {
         margin="normal"
       />
       <TextField
+        select
         label="Worker Name"
         value={workerName}
         onChange={(e) => setWorkerName(e.target.value)}
         fullWidth
         margin="normal"
-      />
+      >
+        {workers.map((worker) => (
+          <MenuItem key={worker.user_name} value={worker.user_name}>
+            {worker.user_name} ({worker.user_email})
+          </MenuItem>
+        ))}
+      </TextField>
       <LocalizationProvider dateAdapter={AdapterDateFns}>
         <DatePicker
           label="Start Date"

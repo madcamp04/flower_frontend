@@ -17,10 +17,12 @@ const ProjectViewPage: React.FC = () => {
   const [projectDetails, setProjectDetails] = useState<any>({});
   const [taskDetails, setTaskDetails] = useState<any[]>([]);
   const [markdownContent, setMarkdownContent] = useState<string>('');
+  const [workers, setWorkers] = useState<any[]>([]);
 
   useEffect(() => {
     fetchProjectDetails();
     fetchTaskDetails();
+    fetchWorkers();
   }, [projectName]);
 
   useEffect(() => {
@@ -69,6 +71,22 @@ const ProjectViewPage: React.FC = () => {
     });
     const data = await response.json();
     setTaskDetails(data.tasks);
+  };
+
+  const fetchWorkers = async () => {
+    const response = await fetch('/backend/api-group-view/worker-list', {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        owner_user_name: userName,
+        group_name: groupName,
+      }),
+    });
+    const data = await response.json();
+    setWorkers(data.workers);
   };
 
   const handleSave = () => {
@@ -132,7 +150,8 @@ const ProjectViewPage: React.FC = () => {
           {taskName && taskName !== '' && (
             <TaskDetails 
               taskDetails={taskDetails.find(task => task.task_title === taskName)} 
-              onSave={handleSave} 
+              onSave={handleSave}
+              workers={workers}
             />
           )}
         </div>
