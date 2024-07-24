@@ -18,11 +18,13 @@ const ProjectViewPage: React.FC = () => {
   const [taskDetails, setTaskDetails] = useState<any[]>([]);
   const [markdownContent, setMarkdownContent] = useState<string>('');
   const [workers, setWorkers] = useState<any[]>([]);
+  const [existingTags, setExistingTags] = useState<string[]>([]);
 
   useEffect(() => {
     fetchProjectDetails();
     fetchTaskDetails();
     fetchWorkers();
+    fetchTags();
   }, [projectName]);
 
   useEffect(() => {
@@ -89,6 +91,22 @@ const ProjectViewPage: React.FC = () => {
     setWorkers(data.workers);
   };
 
+  const fetchTags = async () => {
+    const response = await fetch('/backend/api-group-view/tag-list', {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        owner_user_name: userName,
+        group_name: groupName,
+      }),
+    });
+    const data = await response.json();
+    setExistingTags(data.tags.map(tag => tag.tag_name));
+  };
+
   const handleSave = () => {
     alert('Save functionality not implemented yet.');
   };
@@ -145,6 +163,7 @@ const ProjectViewPage: React.FC = () => {
             <ProjectDetails 
               projectDetails={projectDetails} 
               onSave={handleSave} 
+              existingTags={existingTags}
             />
           )}
           {taskName && taskName !== '' && (
