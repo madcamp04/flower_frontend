@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Container, Typography, Paper, Button } from '@mui/material';
+import { Container, Typography, Paper, Button, AppBar, Toolbar, IconButton, Box } from '@mui/material';
 import Header from './Header';
 import TimelineComponent from './TimelineComponent';
 import ViewButtons from './ViewButtons';
@@ -196,57 +196,66 @@ const GroupViewPage: React.FC = () => {
   const projectNames = projects.map(project => project.project_name);
 
   return (
-    <Container maxWidth="lg">
-      <Header userName={userName} onLogout={handleLogout} />
-      <Paper sx={{ mt: 4, p: 2 }}>
-        <Typography variant="h4" align="center">Group: {groupName}</Typography>
-        <Typography variant="h6" align="center">Owner: {groupOwner}</Typography>
-        <Button onClick={() => setOpenAddTaskDialog(true)} variant="contained" color="primary" sx={{ mt: 2 }}>
-          Add Task
-        </Button>
-        <Button onClick={() => setOpenAddWorkerDialog(true)} variant="contained" color="secondary" sx={{ mt: 2, ml: 2 }}>
-          Add Worker
-        </Button>
-        <Button onClick={() => setOpenAddProjectDialog(true)} variant="contained" sx={{ mt: 2, ml: 2, backgroundColor: '#388e3c', color: 'white' }}>
-          Add Project
-        </Button>
-        <Button onClick={() => setOpenAddTagDialog(true)} variant="contained" sx={{ mt: 2, ml: 2, backgroundColor: '#ff9800', color: 'white' }}>
-          Add Tag
-        </Button>
-        <TagsSelector tags={allTags} activeTags={activeTags} setActiveTags={setActiveTags} />
-        <ViewButtons timeline={timeline} />
-        <TimelineComponent
-          tasks={tasks}
-          workers={workers}
-          setTimeline={setTimeline}
-          navigate={navigate}
-          activeTags={activeTags}
-        />
-        <AddTaskDialog
-          open={openAddTaskDialog}
-          onClose={() => setOpenAddTaskDialog(false)}
-          onSubmit={handleTaskSubmit}
-          workers={workers}
-          projectNames={projectNames}
-        />
-        <AddWorkerDialog
-          open={openAddWorkerDialog}
-          onClose={() => setOpenAddWorkerDialog(false)}
-          onSubmit={handleWorkerSubmit}
-        />
-        <AddProjectDialog
-          open={openAddProjectDialog}
-          onClose={() => setOpenAddProjectDialog(false)}
-          onSubmit={handleProjectSubmit}
-          existingTags={allTags}
-        />
-        <AddTagDialog
-          open={openAddTagDialog}
-          onClose={() => setOpenAddTagDialog(false)}
-          onSubmit={handleTagSubmit}
-        />
-      </Paper>
-    </Container>
+    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
+      <AppBar position="static">
+        <Toolbar>
+          <Typography variant="h6" sx={{ flexGrow: 1 }}>
+            Group: {groupName} | Owner: {groupOwner}
+          </Typography>
+          <Button onClick={() => setOpenAddTaskDialog(true)} variant="contained" color="primary">
+            Add Task
+          </Button>
+          <Button onClick={() => setOpenAddWorkerDialog(true)} variant="contained" color="secondary" sx={{ ml: 2 }}>
+            Add Worker
+          </Button>
+          <Button onClick={() => setOpenAddProjectDialog(true)} variant="contained" sx={{ ml: 2, backgroundColor: '#388e3c', color: 'white' }}>
+            Add Project
+          </Button>
+          <Button onClick={() => setOpenAddTagDialog(true)} variant="contained" sx={{ ml: 2, backgroundColor: '#ff9800', color: 'white' }}>
+            Add Tag
+          </Button>
+          <TagsSelector tags={allTags} activeTags={activeTags} setActiveTags={setActiveTags} />
+          <Button onClick={handleLogout} variant="contained" sx={{ ml: 2 }}>
+            Logout
+          </Button>
+        </Toolbar>
+      </AppBar>
+      <Box sx={{ display: 'flex', flexGrow: 1 }}>
+        <Box sx={{ width: '100%' }}>
+          <ViewButtons timeline={timeline} />
+          <TimelineComponent
+            tasks={tasks}
+            workers={workers}
+            setTimeline={setTimeline}
+            navigate={navigate}
+            activeTags={activeTags}
+          />
+        </Box>
+      </Box>
+      <AddTaskDialog
+        open={openAddTaskDialog}
+        onClose={() => setOpenAddTaskDialog(false)}
+        onSubmit={handleTaskSubmit}
+        workers={workers}
+        projectNames={projectNames}
+      />
+      <AddWorkerDialog
+        open={openAddWorkerDialog}
+        onClose={() => setOpenAddWorkerDialog(false)}
+        onSubmit={handleWorkerSubmit}
+      />
+      <AddProjectDialog
+        open={openAddProjectDialog}
+        onClose={() => setOpenAddProjectDialog(false)}
+        onSubmit={handleProjectSubmit}
+        existingTags={allTags}
+      />
+      <AddTagDialog
+        open={openAddTagDialog}
+        onClose={() => setOpenAddTagDialog(false)}
+        onSubmit={handleTagSubmit}
+      />
+    </Box>
   );
 };
 

@@ -4,6 +4,7 @@ import moment from 'moment';
 import 'vis-timeline/styles/vis-timeline-graph2d.min.css';
 import { Task, Worker } from './utils';
 import { useAppContext } from '../../context/AppContext'; // Import the context
+import './TimelineComponent.css'; // Import custom CSS
 
 interface TimelineComponentProps {
   tasks: Task[];
@@ -55,7 +56,6 @@ const TimelineComponent: React.FC<TimelineComponentProps> = ({ tasks, workers, s
           };
         })
       );
-      console.log("items", items);
 
       if (timelineInstanceRef.current) {
         console.log("updating timeline");
@@ -74,6 +74,7 @@ const TimelineComponent: React.FC<TimelineComponentProps> = ({ tasks, workers, s
           verticalScroll: true,
           snap: (date) => moment(date).startOf('day').toDate(),
           moment: (date: moment.MomentInput) => moment(date).utcOffset(9),
+          groupOrder: 'content', // Order groups by content
         });
 
         timelineInstance.setOptions({
@@ -89,12 +90,7 @@ const TimelineComponent: React.FC<TimelineComponentProps> = ({ tasks, workers, s
 
         timelineInstance.on('doubleClick', (props) => {
           if (props.item) {
-            console.log("props", props);
-            console.log("items", items);
-            console.log("props.item", props.item);
             const [task_title, project_name] = props.item.split('__SEP__');
-            console.log("task_title:", task_title);
-            console.log("project_name:", project_name);
             setTaskName(task_title); // Update taskName in context
             setProjectName(project_name); // Update projectName in context
             navigate(`/project`);
@@ -118,7 +114,7 @@ const TimelineComponent: React.FC<TimelineComponentProps> = ({ tasks, workers, s
     };
   }, []);
 
-  return <div ref={timelineRef} style={{ height: '400px' }}></div>;
+  return <div ref={timelineRef} className="timeline-container"></div>;
 };
 
 export default TimelineComponent;

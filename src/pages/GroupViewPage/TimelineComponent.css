@@ -1,0 +1,30 @@
+.timeline-container {
+    width: 100%;
+    height: 100%;
+    position: relative;
+  }
+  
+  .vis-timeline {
+    height: 100%;
+  }
+  
+  /* Style the left panel (y-axis labels) */
+  .vis-left .vis-labelset .vis-label {
+    font-weight: bold;
+    width: 150px; /* Adjust this value to expand the width */
+    background-color: white; /* Ensure y-axis labels have a white background */
+    z-index: 10;
+    padding: 10px; /* Add padding for better spacing */
+    border-right: 1px solid #ddd; /* Optional: Add a right border for separation */
+  }
+  
+  /* Ensure text within labels is not cut off */
+  .vis-label .vis-inner {
+    overflow: visible;
+  }
+  
+  /* Apply background color to the main content area where items can be placed */
+  .vis-content {
+    background-color: #BBD1F6;
+  }
+  
