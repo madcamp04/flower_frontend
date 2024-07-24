@@ -4,22 +4,20 @@ import { List, ListItem, ListItemText, ListSubheader, Button } from '@mui/materi
 interface ProjectSidebarProps {
   projects: any[];
   tasks: any[];
-  onFocusChange: (focus: 'project' | 'task') => void;
-  onDescriptionChange: (description: string) => void;
+  onFocusChange: (focus: 'project' | 'task', description: string, taskTitle?: string) => void;
   setProjectName: (name: string) => void;
 }
 
-const ProjectSidebar: React.FC<ProjectSidebarProps> = ({ projects, tasks, onFocusChange, onDescriptionChange, setProjectName }) => {
+const ProjectSidebar: React.FC<ProjectSidebarProps> = ({ projects, tasks, onFocusChange, setProjectName }) => {
   return (
     <div>
       <List subheader={<ListSubheader>Projects</ListSubheader>}>
-        {projects.map((project: any) => (
+        {projects.map((project: any, index: number) => (
           <ListItem 
             button 
-            key={project.project_name} 
+            key={project.project_name || `project-${index}`} 
             onClick={() => { 
-              onFocusChange('project'); 
-              onDescriptionChange(project.project_description); 
+              onFocusChange('project', project.project_description); 
               setProjectName(project.project_name);
             }}
           >
@@ -29,13 +27,12 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({ projects, tasks, onFocu
       </List>
       <List subheader={<ListSubheader>Tasks</ListSubheader>}>
         <Button variant="contained" color="primary" style={{ margin: '10px' }}>Add Task</Button>
-        {tasks.map((task: any) => (
+        {tasks.map((task: any, index: number) => (
           <ListItem 
             button 
-            key={task.task_title} 
+            key={task.task_title || `task-${index}`} 
             onClick={() => { 
-              onFocusChange('task'); 
-              onDescriptionChange(task.task_title); 
+              onFocusChange('task', task.description, task.task_title); 
             }}
           >
             <ListItemText primary={task.task_title} />

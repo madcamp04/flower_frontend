@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useAppContext } from '../../context/AppContext';
-import { Container, Paper, Typography } from '@mui/material';
+import { Container, Paper } from '@mui/material';
 import ProjectSidebar from './ProjectSidebar';
 import ProjectDetails from './ProjectDetails';
 import TaskDetails from './TaskDetails';
@@ -13,7 +13,7 @@ import './ProjectViewPage.css';
 const mdParser = new MarkdownIt();
 
 const ProjectViewPage: React.FC = () => {
-  const { userName, groupName, projectName, setProjectName } = useAppContext();
+  const { userName, groupName, projectName, taskName, setTaskName, setProjectName } = useAppContext();
   const [projectDetails, setProjectDetails] = useState<any>({});
   const [taskDetails, setTaskDetails] = useState<any[]>([]);
   const [focusing, setFocusing] = useState<'project' | 'task' | null>(null);
@@ -24,6 +24,21 @@ const ProjectViewPage: React.FC = () => {
     fetchProjectDetails();
     fetchTaskDetails();
   }, [projectName]);
+
+  useEffect(() => {
+    if (!taskName) {
+      setFocusing('project');
+      setDescription(projectDetails.project_description || '');
+      setMarkdownContent(projectDetails.project_description || '');
+    } else {
+      const task = taskDetails.find(task => task.task_title === taskName);
+      if (task) {
+        setFocusing('task');
+        setDescription(task.description);
+        setMarkdownContent(task.description);
+      }
+    }
+  }, [projectDetails, taskDetails, taskName]);
 
   const fetchProjectDetails = async () => {
     const response = await fetch('/backend/api-project-view/project-detail', {
@@ -40,12 +55,14 @@ const ProjectViewPage: React.FC = () => {
     });
     const data = await response.json();
     setProjectDetails(data);
-    setDescription(data.project_description || '');
-    setMarkdownContent(data.project_description || '');
+    if (!taskName) {
+      setDescription(data.project_description || '');
+      setMarkdownContent(data.project_description || '');
+    }
   };
 
   const fetchTaskDetails = async () => {
-    const response = await fetch('/backend/api-project-view/task-detail', {
+    const response = await fetch('/backend/api-group-view/task-list/by-project-name', {
       method: 'POST',
       credentials: 'include',
       headers: {
@@ -69,6 +86,17 @@ const ProjectViewPage: React.FC = () => {
     setMarkdownContent(text);
   };
 
+  const handleFocusChange = (focus: 'project' | 'task', description: string, taskTitle?: string) => {
+    setFocusing(focus);
+    setDescription(description);
+    setMarkdownContent(description);
+    if (focus === 'task' && taskTitle) {
+      setTaskName(taskTitle);
+    } else {
+      setTaskName('');
+    }
+  };
+
   return (
     <Container maxWidth={false} className="container">
       <Split
@@ -87,8 +115,9 @@ const ProjectViewPage: React.FC = () => {
           <ProjectSidebar 
             projects={[projectDetails]}
             tasks={taskDetails} 
-            onFocusChange={setFocusing} 
-            onDescriptionChange={setDescription} 
+            onFocusChange={(focus, description, taskTitle) => {
+              handleFocusChange(focus, description, taskTitle);
+            }} 
             setProjectName={setProjectName}
           />
         </div>
@@ -112,7 +141,8 @@ const ProjectViewPage: React.FC = () => {
           )}
           {focusing === 'task' && (
             <TaskDetails 
-              taskDetails={taskDetails.find(task => task.task_title === description)} 
+              taskName={taskName}
+              taskDetails={taskDetails.find(task => task.task_title === taskName)} 
               onSave={handleSave} 
             />
           )}
