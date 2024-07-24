@@ -110,11 +110,60 @@ const ProjectViewPage: React.FC = () => {
     setExistingTags(data.tags.map(tag => tag.tag_name));
   };
 
-  const handleSave = (updatedDetails: any) => {
-    alert('Save functionality not implemented yet.');
-    // Here you would send the updatedDetails and markdownContent to the backend
-    console.log(updatedDetails);
-    console.log(markdownContent);
+  const handleSave = async (updatedDetails: any) => {
+    let response;
+    if (!taskName || taskName === '') {
+      // Update project
+      response = await fetch('/backend/api-project-view/update-project', {
+        method: 'PATCH',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          owner_user_name: userName,
+          group_name: groupName,
+          project_name: projectName,
+          new_project_name: updatedDetails.project_name,
+          new_project_descr: updatedDetails.description,
+          new_tags: updatedDetails.tags,
+        }),
+      });
+    } else {
+      // Update task
+      response = await fetch('/backend/api-project-view/update-task', {
+        method: 'PATCH',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          owner_user_name: userName,
+          group_name: groupName,
+          project_name: projectName,
+          task_title: taskName,
+          new_task_title: updatedDetails.task_title,
+          new_worker_name: updatedDetails.worker_name,
+          new_description: updatedDetails.description,
+          new_start_time: updatedDetails.start_time,
+          new_end_time: updatedDetails.end_time,
+        }),
+      });
+    }
+
+    const data = await response.json();
+    if (data.success) {
+      alert('Save successful');
+      if (!taskName || taskName === '') {
+        setProjectName(updatedDetails.project_name);
+      } else {
+        setTaskName(updatedDetails.task_title);
+      }
+      fetchProjectDetails();
+      fetchTaskDetails();
+    } else {
+      alert(`Save failed: ${data.message}`);
+    }
     setIsChanged(false);
   };
 
