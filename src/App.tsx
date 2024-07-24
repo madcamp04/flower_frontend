@@ -76,7 +76,7 @@ const App = () => {
             }
           />
           <Route
-            path="/project/:projectName"
+            path="/project"
             element={
               <ProtectedRoute>
                 <ProjectViewPage />

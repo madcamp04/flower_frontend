@@ -97,7 +97,7 @@ const TimelineComponent: React.FC<TimelineComponentProps> = ({ tasks, workers, s
             console.log("project_name:", project_name);
             setTaskName(task_title); // Update taskName in context
             setProjectName(project_name); // Update projectName in context
-            navigate(`/project/${encodeURIComponent(project_name)}`);
+            navigate(`/project`);
           } else {
             alert('Double-clicked on an empty space or axis.');
           }
