@@ -16,8 +16,6 @@ const ProjectViewPage: React.FC = () => {
   const { userName, groupName, projectName, taskName, setTaskName, setProjectName } = useAppContext();
   const [projectDetails, setProjectDetails] = useState<any>({});
   const [taskDetails, setTaskDetails] = useState<any[]>([]);
-  const [focusing, setFocusing] = useState<'project' | 'task' | null>(null);
-  const [description, setDescription] = useState<string>('');
   const [markdownContent, setMarkdownContent] = useState<string>('');
 
   useEffect(() => {
@@ -26,15 +24,11 @@ const ProjectViewPage: React.FC = () => {
   }, [projectName]);
 
   useEffect(() => {
-    if (!taskName) {
-      setFocusing('project');
-      setDescription(projectDetails.project_description || '');
+    if (!taskName || taskName === '') {
       setMarkdownContent(projectDetails.project_description || '');
     } else {
       const task = taskDetails.find(task => task.task_title === taskName);
       if (task) {
-        setFocusing('task');
-        setDescription(task.description);
         setMarkdownContent(task.description);
       }
     }
@@ -56,7 +50,6 @@ const ProjectViewPage: React.FC = () => {
     const data = await response.json();
     setProjectDetails(data);
     if (!taskName) {
-      setDescription(data.project_description || '');
       setMarkdownContent(data.project_description || '');
     }
   };
@@ -86,11 +79,8 @@ const ProjectViewPage: React.FC = () => {
     setMarkdownContent(text);
   };
 
-  const handleFocusChange = (focus: 'project' | 'task', description: string, taskTitle?: string) => {
-    setFocusing(focus);
-    setDescription(description);
-    setMarkdownContent(description);
-    if (focus === 'task' && taskTitle) {
+  const handleFocusChange = (taskTitle?: string) => {
+    if (taskTitle) {
       setTaskName(taskTitle);
     } else {
       setTaskName('');
@@ -115,8 +105,8 @@ const ProjectViewPage: React.FC = () => {
           <ProjectSidebar 
             projects={[projectDetails]}
             tasks={taskDetails} 
-            onFocusChange={(focus, description, taskTitle) => {
-              handleFocusChange(focus, description, taskTitle);
+            onFocusChange={(taskTitle) => {
+              handleFocusChange(taskTitle);
             }} 
             setProjectName={setProjectName}
           />
@@ -133,15 +123,14 @@ const ProjectViewPage: React.FC = () => {
           </Paper>
         </div>
         <div className="sidebar">
-          {focusing === 'project' && (
+          {(!taskName || taskName === '') && (
             <ProjectDetails 
               projectDetails={projectDetails} 
               onSave={handleSave} 
             />
           )}
-          {focusing === 'task' && (
+          {taskName && taskName !== '' && (
             <TaskDetails 
-              taskName={taskName}
               taskDetails={taskDetails.find(task => task.task_title === taskName)} 
               onSave={handleSave} 
             />

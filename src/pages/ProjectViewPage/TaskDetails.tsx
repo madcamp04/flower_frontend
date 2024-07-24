@@ -5,11 +5,10 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 
 interface TaskDetailsProps {
   taskDetails: any;
-  taskName: string;
   onSave: (updatedTask: any) => void;
 }
 
-const TaskDetails: React.FC<TaskDetailsProps> = ({ taskDetails, taskName, onSave }) => {
+const TaskDetails: React.FC<TaskDetailsProps> = ({ taskDetails, onSave }) => {
   const [taskTitle, setTaskTitle] = useState(taskDetails?.task_title || '');
   const [workerName, setWorkerName] = useState(taskDetails?.worker_name || '');
   const [startDate, setStartDate] = useState<Date | null>(new Date(taskDetails?.start_time) || null);

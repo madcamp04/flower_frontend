@@ -4,7 +4,7 @@ import { List, ListItem, ListItemText, ListSubheader, Button } from '@mui/materi
 interface ProjectSidebarProps {
   projects: any[];
   tasks: any[];
-  onFocusChange: (focus: 'project' | 'task', description: string, taskTitle?: string) => void;
+  onFocusChange: (taskTitle?: string) => void;
   setProjectName: (name: string) => void;
 }
 
@@ -17,7 +17,7 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({ projects, tasks, onFocu
             button 
             key={project.project_name || `project-${index}`} 
             onClick={() => { 
-              onFocusChange('project', project.project_description); 
+              onFocusChange(); 
               setProjectName(project.project_name);
             }}
           >
@@ -32,7 +32,7 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({ projects, tasks, onFocu
             button 
             key={task.task_title || `task-${index}`} 
             onClick={() => { 
-              onFocusChange('task', task.description, task.task_title); 
+              onFocusChange(task.task_title); 
             }}
           >
             <ListItemText primary={task.task_title} />
