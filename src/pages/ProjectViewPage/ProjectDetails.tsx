@@ -6,22 +6,36 @@ interface ProjectDetailsProps {
   projectDetails: any;
   onSave: (updatedProject: any) => void;
   existingTags: string[];
+  isChanged: boolean;
 }
 
-const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectDetails, onSave, existingTags }) => {
+const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectDetails, onSave, existingTags, isChanged }) => {
   const [projectName, setProjectName] = useState(projectDetails.project_name || '');
   const [tags, setTags] = useState<string[]>(projectDetails.tags || []);
+  const [localIsChanged, setLocalIsChanged] = useState(false);
 
   useEffect(() => {
     setProjectName(projectDetails.project_name || '');
     setTags(projectDetails.tags || []);
+    setLocalIsChanged(false);
   }, [projectDetails]);
+
+  const handleProjectNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setProjectName(e.target.value);
+    setLocalIsChanged(true);
+  };
+
+  const handleTagsChange = (event: any, newValue: string[]) => {
+    setTags(newValue);
+    setLocalIsChanged(true);
+  };
 
   const handleSave = () => {
     onSave({
       project_name: projectName,
       tags: tags
     });
+    setLocalIsChanged(false);
   };
 
   return (
@@ -29,7 +43,7 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectDetails, onSave,
       <TextField
         label="Project Name"
         value={projectName}
-        onChange={(e) => setProjectName(e.target.value)}
+        onChange={handleProjectNameChange}
         fullWidth
         margin="normal"
       />
@@ -38,9 +52,7 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectDetails, onSave,
         freeSolo
         options={existingTags}
         value={tags}
-        onChange={(event, newValue) => {
-          setTags(newValue);
-        }}
+        onChange={handleTagsChange}
         renderTags={(value: readonly string[], getTagProps) =>
           value.map((option: string, index: number) => (
             <Chip variant="outlined" label={option} {...getTagProps({ index })} />
@@ -56,7 +68,13 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectDetails, onSave,
           />
         )}
       />
-      <Button variant="contained" onClick={handleSave}>Save</Button>
+      <Button 
+        variant="contained" 
+        onClick={handleSave} 
+        disabled={!isChanged && !localIsChanged}
+      >
+        Save
+      </Button>
     </Box>
   );
 };

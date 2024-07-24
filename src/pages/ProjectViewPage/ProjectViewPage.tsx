@@ -19,6 +19,7 @@ const ProjectViewPage: React.FC = () => {
   const [markdownContent, setMarkdownContent] = useState<string>('');
   const [workers, setWorkers] = useState<any[]>([]);
   const [existingTags, setExistingTags] = useState<string[]>([]);
+  const [isChanged, setIsChanged] = useState(false);
 
   useEffect(() => {
     fetchProjectDetails();
@@ -30,10 +31,12 @@ const ProjectViewPage: React.FC = () => {
   useEffect(() => {
     if (!taskName || taskName === '') {
       setMarkdownContent(projectDetails.project_description || '');
+      setIsChanged(false);
     } else {
       const task = taskDetails.find(task => task.task_title === taskName);
       if (task) {
         setMarkdownContent(task.description);
+        setIsChanged(false);
       }
     }
   }, [projectDetails, taskDetails, taskName]);
@@ -107,12 +110,17 @@ const ProjectViewPage: React.FC = () => {
     setExistingTags(data.tags.map(tag => tag.tag_name));
   };
 
-  const handleSave = () => {
+  const handleSave = (updatedDetails: any) => {
     alert('Save functionality not implemented yet.');
+    // Here you would send the updatedDetails and markdownContent to the backend
+    console.log(updatedDetails);
+    console.log(markdownContent);
+    setIsChanged(false);
   };
 
   const handleEditorChange = ({ html, text }: { html: string, text: string }) => {
     setMarkdownContent(text);
+    setIsChanged(true);
   };
 
   const handleFocusChange = (taskTitle?: string) => {
@@ -162,15 +170,17 @@ const ProjectViewPage: React.FC = () => {
           {(!taskName || taskName === '') && (
             <ProjectDetails 
               projectDetails={projectDetails} 
-              onSave={handleSave} 
+              onSave={(updatedDetails) => handleSave({ ...updatedDetails, description: markdownContent })} 
               existingTags={existingTags}
+              isChanged={isChanged}
             />
           )}
           {taskName && taskName !== '' && (
             <TaskDetails 
               taskDetails={taskDetails.find(task => task.task_title === taskName)} 
-              onSave={handleSave}
+              onSave={(updatedDetails) => handleSave({ ...updatedDetails, description: markdownContent })} 
               workers={workers}
+              isChanged={isChanged}
             />
           )}
         </div>

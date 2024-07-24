@@ -8,13 +8,15 @@ interface TaskDetailsProps {
   taskDetails: any;
   onSave: (updatedTask: any) => void;
   workers: { user_name: string; user_email: string; }[];
+  isChanged: boolean;
 }
 
-const TaskDetails: React.FC<TaskDetailsProps> = ({ taskDetails, onSave, workers }) => {
+const TaskDetails: React.FC<TaskDetailsProps> = ({ taskDetails, onSave, workers, isChanged }) => {
   const [taskTitle, setTaskTitle] = useState('');
   const [workerName, setWorkerName] = useState('');
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
+  const [localIsChanged, setLocalIsChanged] = useState(false);
 
   useEffect(() => {
     if (taskDetails) {
@@ -22,6 +24,7 @@ const TaskDetails: React.FC<TaskDetailsProps> = ({ taskDetails, onSave, workers 
       setWorkerName(taskDetails.worker_name || '');
       setStartDate(taskDetails.start_time ? parse(taskDetails.start_time, 'yyyy-MM-dd HH:mm:ss.S', new Date()) : null);
       setEndDate(taskDetails.end_time ? parse(taskDetails.end_time, 'yyyy-MM-dd HH:mm:ss.S', new Date()) : null);
+      setLocalIsChanged(false);
     }
   }, [taskDetails]);
 
@@ -42,6 +45,7 @@ const TaskDetails: React.FC<TaskDetailsProps> = ({ taskDetails, onSave, workers 
         project_name: taskDetails.project_name,
         tag_colors: taskDetails.tag_colors,
       });
+      setLocalIsChanged(false);
     }
   };
 
@@ -50,7 +54,10 @@ const TaskDetails: React.FC<TaskDetailsProps> = ({ taskDetails, onSave, workers 
       <TextField
         label="Task Title"
         value={taskTitle}
-        onChange={(e) => setTaskTitle(e.target.value)}
+        onChange={(e) => {
+          setTaskTitle(e.target.value);
+          setLocalIsChanged(true);
+        }}
         fullWidth
         margin="normal"
       />
@@ -58,7 +65,10 @@ const TaskDetails: React.FC<TaskDetailsProps> = ({ taskDetails, onSave, workers 
         select
         label="Worker Name"
         value={workerName}
-        onChange={(e) => setWorkerName(e.target.value)}
+        onChange={(e) => {
+          setWorkerName(e.target.value);
+          setLocalIsChanged(true);
+        }}
         fullWidth
         margin="normal"
       >
@@ -72,17 +82,29 @@ const TaskDetails: React.FC<TaskDetailsProps> = ({ taskDetails, onSave, workers 
         <DatePicker
           label="Start Date"
           value={startDate}
-          onChange={(newValue) => setStartDate(newValue)}
+          onChange={(newValue) => {
+            setStartDate(newValue);
+            setLocalIsChanged(true);
+          }}
           slotProps={{ textField: { fullWidth: true, margin: "normal" } }}
         />
         <DatePicker
           label="End Date"
           value={endDate}
-          onChange={(newValue) => setEndDate(newValue)}
+          onChange={(newValue) => {
+            setEndDate(newValue);
+            setLocalIsChanged(true);
+          }}
           slotProps={{ textField: { fullWidth: true, margin: "normal" } }}
         />
       </LocalizationProvider>
-      <Button variant="contained" onClick={handleSave}>Save</Button>
+      <Button 
+        variant="contained" 
+        onClick={handleSave} 
+        disabled={!isChanged && !localIsChanged}
+      >
+        Save
+      </Button>
     </Box>
   );
 };
