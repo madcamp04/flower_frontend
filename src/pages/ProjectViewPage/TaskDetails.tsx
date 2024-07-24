@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { TextField, Button, Box } from '@mui/material';
 import { LocalizationProvider, DatePicker } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { parse } from 'date-fns';
 
 interface TaskDetailsProps {
   taskDetails: any;
@@ -9,18 +10,23 @@ interface TaskDetailsProps {
 }
 
 const TaskDetails: React.FC<TaskDetailsProps> = ({ taskDetails, onSave }) => {
-  const [taskTitle, setTaskTitle] = useState(taskDetails?.task_title || '');
-  const [workerName, setWorkerName] = useState(taskDetails?.worker_name || '');
-  const [startDate, setStartDate] = useState<Date | null>(new Date(taskDetails?.start_time) || null);
-  const [endDate, setEndDate] = useState<Date | null>(new Date(taskDetails?.end_time) || null);
+  const [taskTitle, setTaskTitle] = useState('');
+  const [workerName, setWorkerName] = useState('');
+  const [startDate, setStartDate] = useState<Date | null>(null);
+  const [endDate, setEndDate] = useState<Date | null>(null);
 
   useEffect(() => {
     if (taskDetails) {
-      setTaskTitle(taskDetails.task_title);
-      setWorkerName(taskDetails.worker_name);
-      setStartDate(new Date(taskDetails.start_time));
-      setEndDate(new Date(taskDetails.end_time));
+      setTaskTitle(taskDetails.task_title || '');
+      setWorkerName(taskDetails.worker_name || '');
+      setStartDate(taskDetails.start_time ? parse(taskDetails.start_time, 'yyyy-MM-dd HH:mm:ss.S', new Date()) : null);
+      setEndDate(taskDetails.end_time ? parse(taskDetails.end_time, 'yyyy-MM-dd HH:mm:ss.S', new Date()) : null);
+      console.log("taskDetail", taskDetails);
+      console.log("taskDetail.start_time", taskDetails.start_time);
+      console.log("taskDetail.end_time", taskDetails.end_time);
     }
+    console.log("startDate", startDate);
+    console.log("endDate", endDate);
   }, [taskDetails]);
 
   const formatDateTime = (date: Date): string => {
@@ -28,7 +34,6 @@ const TaskDetails: React.FC<TaskDetailsProps> = ({ taskDetails, onSave }) => {
   };
 
   const handleSave = () => {
-    // Adjust the end date to make it inclusive
     if (startDate && endDate) {
       const adjustedEndDate = new Date(endDate);
       adjustedEndDate.setDate(adjustedEndDate.getDate() + 1);
@@ -39,7 +44,7 @@ const TaskDetails: React.FC<TaskDetailsProps> = ({ taskDetails, onSave }) => {
         end_time: formatDateTime(adjustedEndDate),
         description: taskDetails.description,
         project_name: taskDetails.project_name,
-        tag_colors: taskDetails.tag_colors
+        tag_colors: taskDetails.tag_colors,
       });
     }
   };
