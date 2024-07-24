@@ -12,3 +12,8 @@ export interface Task {
   project_name: string;
   tag_color: string[];
 }
+
+export interface Project {
+  project_name: string;
+  tag_colors: string[];
+}

@@ -24,9 +24,22 @@ const TimelineComponent: React.FC<TimelineComponentProps> = ({ tasks, workers, s
           content: worker.user_name,
         }))
       );
+      console.log("rendering timeline");
+      console.log("groups", groups);
+      console.log(tasks, workers);
 
       const items = new DataSet(
         tasks.map(task => {
+          console.log("task", task);
+          console.log({
+            id: task.task_title,
+            group: workers.findIndex(worker => worker.user_name === task.worker_name) + 1,
+            content: task.task_title,
+            start: task.start_date,
+            end: task.end_date,
+            className: `vis-item`,
+            projectName: task.project_name,
+          });
           return {
             id: task.task_title,
             group: workers.findIndex(worker => worker.user_name === task.worker_name) + 1,
@@ -38,11 +51,14 @@ const TimelineComponent: React.FC<TimelineComponentProps> = ({ tasks, workers, s
           };
         })
       );
+      console.log("items", items);
 
       if (timelineInstanceRef.current) {
+        console.log("updating timeline");
         timelineInstanceRef.current.setItems(items);
         timelineInstanceRef.current.setGroups(groups);
       } else {
+        console.log("creating timeline");
         const timelineInstance = new Timeline(timelineRef.current, items, groups, {
           stack: true,
           editable: { updateTime: true, updateGroup: true, remove: true },
