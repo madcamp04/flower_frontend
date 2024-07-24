@@ -3,6 +3,7 @@ import { DataSet, Timeline } from 'vis-timeline/standalone';
 import moment from 'moment';
 import 'vis-timeline/styles/vis-timeline-graph2d.min.css';
 import { Task, Worker } from './utils';
+import { useAppContext } from '../../context/AppContext'; // Import the context
 
 interface TimelineComponentProps {
   tasks: Task[];
@@ -15,6 +16,8 @@ interface TimelineComponentProps {
 const TimelineComponent: React.FC<TimelineComponentProps> = ({ tasks, workers, setTimeline, navigate, activeTags }) => {
   const timelineRef = useRef<HTMLDivElement | null>(null);
   const timelineInstanceRef = useRef<Timeline | null>(null);
+
+  const { setProjectName, setTaskName } = useAppContext(); // Use the context
 
   useEffect(() => {
     if (timelineRef.current) {
@@ -30,18 +33,19 @@ const TimelineComponent: React.FC<TimelineComponentProps> = ({ tasks, workers, s
 
       const items = new DataSet(
         tasks.map(task => {
+          const itemId = `${task.task_title}__SEP__${task.project_name}`; // Unique identifier
           console.log("task", task);
           console.log({
-            id: task.task_title,
+            id: itemId,
             group: workers.findIndex(worker => worker.user_name === task.worker_name) + 1,
-            content: task.task_title,
+            content: task.task_title, // Only display task_title
             start: task.start_date,
             end: task.end_date,
             className: `vis-item`,
             projectName: task.project_name,
           });
           return {
-            id: task.task_title,
+            id: itemId,
             group: workers.findIndex(worker => worker.user_name === task.worker_name) + 1,
             content: task.task_title,
             start: task.start_date,
@@ -85,8 +89,15 @@ const TimelineComponent: React.FC<TimelineComponentProps> = ({ tasks, workers, s
 
         timelineInstance.on('doubleClick', (props) => {
           if (props.item) {
-            const item = items.get(props.item);
-            navigate(`/project/${encodeURIComponent(item.projectName || '')}`);
+            console.log("props", props);
+            console.log("items", items);
+            console.log("props.item", props.item);
+            const [task_title, project_name] = props.item.split('__SEP__');
+            console.log("task_title:", task_title);
+            console.log("project_name:", project_name);
+            setTaskName(task_title); // Update taskName in context
+            setProjectName(project_name); // Update projectName in context
+            navigate(`/project/${encodeURIComponent(project_name)}`);
           } else {
             alert('Double-clicked on an empty space or axis.');
           }

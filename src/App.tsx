@@ -6,7 +6,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import GroupSelectionPage from './pages/GroupSelectionPage';
 import GroupViewPage from './pages/GroupViewPage/GroupViewPage';
-import ProjectViewPage from './pages/ProjectViewPage';
+import ProjectViewPage from './pages/ProjectViewPage/ProjectViewPage';
 import { AppProvider, useAppContext } from './context/AppContext';
 
 const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
