@@ -260,13 +260,13 @@ const ProjectViewPage: React.FC = () => {
         </div>
         <div>
           <Paper className="markdown-container">
-            <MdEditor
-              value={markdownContent}
-              style={{ height: '100%' }}
-              renderHTML={(text) => mdParser.render(text)}
-              onChange={handleEditorChange}
-              config={{ view: { menu: true, md: true, html: false } }}
-            />
+          <MdEditor
+            value={markdownContent}
+            style={{ height: '100%' }}
+            renderHTML={(text) => mdParser.render(text)}
+            onChange={handleEditorChange}
+            config={{ view: { menu: true, md: false, html: true }}}
+          />
           </Paper>
         </div>
         <div className="sidebar">
