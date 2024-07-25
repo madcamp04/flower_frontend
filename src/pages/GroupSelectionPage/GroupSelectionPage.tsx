@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Box, Fab, Grid, Typography } from '@mui/material';
+import { Box, Fab, Grid } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import { useAppContext } from '../../context/AppContext';
 import AppBarComponent from './AppBarComponent';
@@ -170,10 +170,7 @@ const GroupSelectionPage = () => {
   return (
     <Box style={{ width: '100vw', backgroundColor: '#f0f0f0', minHeight: '100vh', padding: 0 }}>
       <AppBarComponent userName={userName} handleLogout={handleLogout} />
-      <Box display="flex" flexDirection="column" alignItems="center" justifyContent="center" minHeight="calc(100vh - 80px)" paddingTop={2} paddingBottom={2}>
-        <Typography variant="h5" component="h2" gutterBottom style={{ color: '#333' }}>
-          Your Groups
-        </Typography>
+      <Box display="flex" flexDirection="column" alignItems="center" justifyContent="center" minHeight="calc(100vh - 80px)">
         <Grid container spacing={2}>
           <GroupListComponent
             groups={ownedGroups}
@@ -231,3 +228,4 @@ const GroupSelectionPage = () => {
 };
 
 export default GroupSelectionPage;
+
