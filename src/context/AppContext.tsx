@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
 interface AppContextType {
   userName: string;
@@ -16,11 +16,31 @@ interface AppContextType {
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export const AppProvider = ({ children }: { children: ReactNode }) => {
-  const [userName, setUserName] = useState('');
-  const [groupName, setGroupName] = useState('');
-  const [groupOwner, setGroupOwner] = useState('');
-  const [projectName, setProjectName] = useState('');
-  const [taskName, setTaskName] = useState('');
+  const [userName, setUserName] = useState<string>(() => localStorage.getItem('userName') || '');
+  const [groupName, setGroupName] = useState<string>(() => localStorage.getItem('groupName') || '');
+  const [groupOwner, setGroupOwner] = useState<string>(() => localStorage.getItem('groupOwner') || '');
+  const [projectName, setProjectName] = useState<string>(() => localStorage.getItem('projectName') || '');
+  const [taskName, setTaskName] = useState<string>(() => localStorage.getItem('taskName') || '');
+
+  useEffect(() => {
+    localStorage.setItem('userName', userName);
+  }, [userName]);
+
+  useEffect(() => {
+    localStorage.setItem('groupName', groupName);
+  }, [groupName]);
+
+  useEffect(() => {
+    localStorage.setItem('groupOwner', groupOwner);
+  }, [groupOwner]);
+
+  useEffect(() => {
+    localStorage.setItem('projectName', projectName);
+  }, [projectName]);
+
+  useEffect(() => {
+    localStorage.setItem('taskName', taskName);
+  }, [taskName]);
 
   return (
     <AppContext.Provider

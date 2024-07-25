@@ -1,0 +1,96 @@
+/* TimelineComponent.css */
+
+.timeline-container {
+    width: 100%;
+    height: 100%;
+    position: relative;
+}
+
+.timeline-inner-container {
+    width: 100%;
+    height: 100%;
+}
+
+.vis-timeline {
+    height: 100%;
+}
+
+/* Style the left panel (y-axis labels) */
+.vis-left .vis-labelset .vis-label {
+    font-weight: bold;
+    width: 230px; /* Increased width for y-axis labels */
+    background-color: white;
+    z-index: 10;
+    padding: 10px;
+    border-right: 1px solid #ddd;
+}
+
+/* Ensure text within labels is not cut off and set a minimum height */
+.vis-label .vis-inner {
+    overflow: visible;
+    min-height: 100px;
+}
+
+.vis-time-axis .vis-grid.vis-odd {
+    background-color: #f0f0f0; /* Light grey */
+}
+
+.vis-time-axis .vis-grid.vis-even {
+    background-color: #ffffff; /* White */
+}
+
+/* Style for date labels in the lower layer (e.g., day of week) */
+.vis-time-axis .vis-text.vis-minor {
+    font-size: 14px;  /* Set the desired font size for the lower layer */
+    font-weight: normal;  /* Set the desired font weight for the lower layer */
+    color: #666666;  /* Set the desired font color for the lower layer */
+}
+
+/* Style for date labels in the upper layer (e.g., month/year) */
+.vis-time-axis .vis-text.vis-major {
+    font-size: 16px;  /* Set the desired font size for the upper layer */
+    font-weight: bold;  /* Set the desired font weight for the upper layer */
+    color: #333333;  /* Set the desired font color for the upper layer */
+}
+
+/* Increase the height of the x-axis block */
+.vis-time-axis .vis-grid {
+    min-height: 50px; /* Set the desired height */
+}
+
+/* Adjust the line height and padding to ensure the labels fit within the new height */
+.vis-time-axis .vis-text.vis-minor {
+    min-height: 10px; /* Match the height for vertical centering in the lower layer */
+    padding-top: 5px; /* Adjust as necessary for spacing in the lower layer */
+}
+
+.vis-time-axis .vis-text.vis-major {
+    min-height: 10px; /* Match the height for vertical centering in the upper layer */
+    padding-top: 5px; /* Adjust as necessary for spacing in the upper layer */
+}
+
+/* Button container styling */
+.button-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 20;
+    display: flex;
+    gap: 5px; /* Space between buttons */
+    width: 180px; /* Total width for the button container */
+    justify-content: space-between; /* Evenly space the buttons */
+    padding: 10px;
+}
+
+.button-container button {
+    height: 30px;
+    font-size: 10px; /* Adjust font size as necessary */
+    cursor: pointer;
+}
+
+/* Increase the height of the timeline items */
+.vis-item {
+    min-height: 10px; /* Set the desired height */
+    line-height: 20px; /* Center the text vertically */
+    padding-left: 5px;
+}

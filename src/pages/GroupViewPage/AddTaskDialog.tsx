@@ -29,13 +29,21 @@ const AddTaskDialog: React.FC<AddTaskDialogProps> = ({ open, onClose, onSubmit, 
   const [end_date, setEndDate] = useState<Date | null>(null);
   const [project_name, setProjectName] = useState('');
 
+  const formatDateTime = (date: Date): string => {
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')} 00:00:00`;
+  };
+
   const handleSubmit = () => {
     if (worker_name && task_title && description && start_date && end_date && project_name) {
+      // Adjust the end date to make it inclusive
+      const adjustedEndDate = new Date(end_date);
+      adjustedEndDate.setDate(adjustedEndDate.getDate() + 1);
+
       onSubmit({
         worker_name,
         task_title,
-        start_date: start_date.toISOString().split('T')[0],
-        end_date: end_date.toISOString().split('T')[0],
+        start_date: formatDateTime(start_date),
+        end_date: formatDateTime(adjustedEndDate),
         description,
         project_name,
         tag_color: ['#FF0000'], // Example color, this can be dynamically set

@@ -8,8 +8,8 @@ interface TagsSelectorProps {
 }
 
 const TagsSelector: React.FC<TagsSelectorProps> = ({ tags, activeTags, setActiveTags }) => {
-  const handleChange = (event: React.ChangeEvent<{ value: string[] }>) => {
-    setActiveTags(event.target.value);
+  const handleChange = (event: React.ChangeEvent<{ value: unknown }>) => {
+    setActiveTags(event.target.value as string[]);
   };
 
   return (
@@ -18,20 +18,38 @@ const TagsSelector: React.FC<TagsSelectorProps> = ({ tags, activeTags, setActive
       value={activeTags}
       onChange={handleChange}
       input={<Input />}
-      renderValue={(selected) => (
-        <div style={{ display: 'flex', flexWrap: 'wrap' }}>
-          {(selected as string[]).map((value) => (
-            <Chip key={value} label={value} style={{ margin: 2 }} />
-          ))}
-        </div>
-      )}
+      displayEmpty
+      renderValue={(selected) => {
+        if ((selected as string[]).length === 0) {
+          return <span>Select Tags</span>;
+        }
+        return (
+          <div style={{ display: 'flex', flexWrap: 'wrap' }}>
+            {(selected as string[]).map((value) => (
+              <Chip key={value} label={value} style={{ margin: 2 }} />
+            ))}
+          </div>
+        );
+      }}
+      sx={{ width: 200 }} // Set the fixed width here
+      MenuProps={{
+        PaperProps: {
+          style: {
+            maxHeight: 48 * 4.5 + 8, // Limit the menu height if necessary
+          },
+        },
+      }}
     >
-      {tags.map((tag) => (
-        <MenuItem key={tag} value={tag}>
-          <Checkbox checked={activeTags.indexOf(tag) > -1} />
-          <ListItemText primary={tag} />
-        </MenuItem>
-      ))}
+      {tags.length === 0 ? (
+        <MenuItem disabled>No Tags Available</MenuItem>
+      ) : (
+        tags.map((tag) => (
+          <MenuItem key={tag} value={tag}>
+            <Checkbox checked={activeTags.indexOf(tag) > -1} />
+            <ListItemText primary={tag} />
+          </MenuItem>
+        ))
+      )}
     </Select>
   );
 };
