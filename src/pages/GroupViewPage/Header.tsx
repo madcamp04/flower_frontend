@@ -4,6 +4,7 @@ import Autocomplete from '@mui/material/Autocomplete';
 import { usePopupState, bindTrigger, bindMenu } from 'material-ui-popup-state/hooks';
 import TagsSelector from './TagsSelector';
 import { useNavigate } from 'react-router-dom';
+import logo from '../../../public/Flower_logo.png';
 
 interface HeaderProps {
   groupName: string;
@@ -40,6 +41,7 @@ const Header: React.FC<HeaderProps> = ({
   return (
     <AppBar position="static" sx={{ backgroundColor: 'white', color: 'black', height: '80px', boxShadow: 'none', borderBottom: '1px solid gray' }}>
       <Toolbar sx={{ height: '100%', display: 'flex', alignItems: 'center' }}>
+        <img src={logo} alt="Logo" style={{ marginRight: 16, height: 55 }} />
         <Box sx={{ flexGrow: 1 }}>
           <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
             {groupName}
