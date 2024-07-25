@@ -5,11 +5,12 @@ import Autocomplete from '@mui/material/Autocomplete';
 interface ProjectDetailsProps {
   projectDetails: any;
   onSave: (updatedProject: any) => void;
+  onDelete: () => void;  // Add this line
   existingTags: string[];
   isChanged: boolean;
 }
 
-const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectDetails, onSave, existingTags, isChanged }) => {
+const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectDetails, onSave, onDelete, existingTags, isChanged }) => {  // Add onDelete to the parameters
   const [projectName, setProjectName] = useState(projectDetails.project_name || '');
   const [tags, setTags] = useState<string[]>(projectDetails.tags || []);
   const [localIsChanged, setLocalIsChanged] = useState(false);
@@ -36,6 +37,10 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectDetails, onSave,
       tags: tags
     });
     setLocalIsChanged(false);
+  };
+
+  const handleDelete = () => {
+    onDelete();
   };
 
   return (
@@ -68,13 +73,22 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectDetails, onSave,
           />
         )}
       />
-      <Button 
-        variant="contained" 
-        onClick={handleSave} 
-        disabled={!isChanged && !localIsChanged}
-      >
-        Save
-      </Button>
+      <Box display="flex" justifyContent="space-between">
+        <Button 
+          variant="contained" 
+          color="secondary"
+          onClick={handleDelete}
+        >
+          Delete
+        </Button>
+        <Button 
+          variant="contained" 
+          onClick={handleSave} 
+          disabled={!isChanged && !localIsChanged}
+        >
+          Save
+        </Button>
+      </Box>
     </Box>
   );
 };

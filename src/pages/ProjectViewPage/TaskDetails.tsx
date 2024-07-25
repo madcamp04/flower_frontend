@@ -7,11 +7,12 @@ import { parse } from 'date-fns';
 interface TaskDetailsProps {
   taskDetails: any;
   onSave: (updatedTask: any) => void;
+  onDelete: () => void;  // Add this line
   workers: { user_name: string; user_email: string; }[];
   isChanged: boolean;
 }
 
-const TaskDetails: React.FC<TaskDetailsProps> = ({ taskDetails, onSave, workers, isChanged }) => {
+const TaskDetails: React.FC<TaskDetailsProps> = ({ taskDetails, onSave, onDelete, workers, isChanged }) => {  // Add onDelete to the parameters
   const [taskTitle, setTaskTitle] = useState('');
   const [workerName, setWorkerName] = useState('');
   const [startDate, setStartDate] = useState<Date | null>(null);
@@ -47,6 +48,10 @@ const TaskDetails: React.FC<TaskDetailsProps> = ({ taskDetails, onSave, workers,
       });
       setLocalIsChanged(false);
     }
+  };
+
+  const handleDelete = () => {
+    onDelete();
   };
 
   return (
@@ -98,13 +103,22 @@ const TaskDetails: React.FC<TaskDetailsProps> = ({ taskDetails, onSave, workers,
           slotProps={{ textField: { fullWidth: true, margin: "normal" } }}
         />
       </LocalizationProvider>
-      <Button 
-        variant="contained" 
-        onClick={handleSave} 
-        disabled={!isChanged && !localIsChanged}
-      >
-        Save
-      </Button>
+      <Box display="flex" justifyContent="space-between">
+        <Button 
+          variant="contained" 
+          color="secondary"
+          onClick={handleDelete}
+        >
+          Delete
+        </Button>
+        <Button 
+          variant="contained" 
+          onClick={handleSave} 
+          disabled={!isChanged && !localIsChanged}
+        >
+          Save
+        </Button>
+      </Box>
     </Box>
   );
 };
