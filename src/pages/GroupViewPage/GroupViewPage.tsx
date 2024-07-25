@@ -1,15 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Container, Typography, Paper, Button, AppBar, Toolbar, IconButton, Box, Menu, MenuItem, TextField } from '@mui/material';
-import Autocomplete from '@mui/material/Autocomplete';
-import { usePopupState, bindTrigger, bindMenu } from 'material-ui-popup-state/hooks';
+import { Box, Paper, Button, Typography } from '@mui/material';
 import Header from './Header';
 import TimelineComponent from './TimelineComponent';
 import AddTaskDialog from './AddTaskDialog';
 import AddWorkerDialog from './AddWorkerDialog';
 import AddProjectDialog from './AddProjectDialog';
 import AddTagDialog from './AddTagDialog';
-import TagsSelector from './TagsSelector';
 import { Task, Worker, Project } from './utils';
 import { useAppContext } from '../../context/AppContext';
 import './GroupViewPage.css';
@@ -220,42 +217,22 @@ const GroupViewPage: React.FC = () => {
     setActiveProject(value);
   };
 
-  // Popup state for the "Create New" button
-  const popupState = usePopupState({ variant: 'popover', popupId: 'createNewMenu' });
-
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
-      <AppBar position="static" sx={{ backgroundColor: 'white', color: 'black', height: '80px', boxShadow: 'none', borderBottom: '1px solid gray' }}>
-        <Toolbar sx={{ height: '100%', display: 'flex', alignItems: 'center' }}>
-          <Box sx={{ flexGrow: 1 }}>
-            <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
-              {groupName}
-            </Typography>
-            <Typography variant="subtitle1" sx={{ color: 'gray' }}>
-              {groupOwner}
-            </Typography>
-          </Box>
-          <TagsSelector tags={allTags} activeTags={activeTags} setActiveTags={setActiveTags} />
-          <Autocomplete
-            options={projectNames}
-            renderInput={(params) => <TextField {...params} label="Select Project" variant="outlined" />}
-            onChange={handleProjectChange}
-            sx={{ width: 300, ml: 2 }}
-          />
-          <Button {...bindTrigger(popupState)} variant="outlined" sx={{ ml: 2, backgroundColor: 'white', color: 'black', border: '1px solid black', fontWeight: 'bold' }}>
-            Create New
-          </Button>
-          <Menu {...bindMenu(popupState)}>
-            <MenuItem onClick={() => { setOpenAddTaskDialog(true); popupState.close(); }}>Add Task</MenuItem>
-            <MenuItem onClick={() => { setOpenAddWorkerDialog(true); popupState.close(); }}>Add Worker</MenuItem>
-            <MenuItem onClick={() => { setOpenAddProjectDialog(true); popupState.close(); }}>Add Project</MenuItem>
-            <MenuItem onClick={() => { setOpenAddTagDialog(true); popupState.close(); }}>Add Tag</MenuItem>
-          </Menu>
-          <Button onClick={handleLogout} variant="outlined" sx={{ ml: 2, backgroundColor: 'white', color: 'black', border: '1px solid black', fontWeight: 'bold' }}>
-            Logout
-          </Button>
-        </Toolbar>
-      </AppBar>
+      <Header
+        groupName={groupName}
+        groupOwner={groupOwner}
+        allTags={allTags}
+        activeTags={activeTags}
+        setActiveTags={setActiveTags}
+        projectNames={projectNames}
+        handleProjectChange={handleProjectChange}
+        handleLogout={handleLogout}
+        setOpenAddTaskDialog={setOpenAddTaskDialog}
+        setOpenAddWorkerDialog={setOpenAddWorkerDialog}
+        setOpenAddProjectDialog={setOpenAddProjectDialog}
+        setOpenAddTagDialog={setOpenAddTagDialog}
+      />
       <Box sx={{ height: '2px', backgroundColor: 'gray' }} />
       <Box sx={{ display: 'flex', flexGrow: 1 }}>
         <Box sx={{ width: '100%' }}>

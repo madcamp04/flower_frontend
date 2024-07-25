@@ -15,8 +15,13 @@ import {
   Grid,
   AppBar,
   Toolbar,
+  Paper,
+  Divider,
+  IconButton,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
+import DeleteIcon from '@mui/icons-material/Delete';
+import EditIcon from '@mui/icons-material/Edit';
 import { useAppContext } from '../context/AppContext';
 
 interface Group {
@@ -30,6 +35,9 @@ const GroupSelectionPage = () => {
   const [groups, setGroups] = useState<Group[]>([]);
   const [open, setOpen] = useState<boolean>(false);
   const [newGroupName, setNewGroupName] = useState<string>('');
+  const [renameDialogOpen, setRenameDialogOpen] = useState<boolean>(false);
+  const [selectedGroup, setSelectedGroup] = useState<Group | null>(null);
+  const [newName, setNewName] = useState<string>('');
 
   const navigate = useNavigate();
 
@@ -102,43 +110,136 @@ const GroupSelectionPage = () => {
     });
   };
 
+  const handleDeleteGroup = (group: Group) => {
+    fetch('/backend/api-group-selection/delete-group', {
+      method: 'DELETE',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        owner_user_name: userName,
+        group_name: group.group_name,
+      }),
+    })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          fetchGroups();
+        } else {
+          console.error('Group deletion failed:', data.message);
+        }
+      });
+  };
+
+  const handleRenameGroup = () => {
+    if (selectedGroup) {
+      fetch('/backend/api-group-selection/update-group', {
+        method: 'PATCH',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          owner_user_name: userName,
+          group_name: selectedGroup.group_name,
+          new_group_name: newName,
+        }),
+      })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            fetchGroups();
+            setRenameDialogOpen(false);
+          } else {
+            console.error('Group update failed:', data.message);
+          }
+        });
+    }
+  };
+
+  const openRenameDialog = (group: Group) => {
+    setSelectedGroup(group);
+    setNewName(group.group_name);
+    setRenameDialogOpen(true);
+  };
+
+  const closeRenameDialog = () => {
+    setRenameDialogOpen(false);
+  };
+
+  const ownedGroups = groups.filter(group => group.owner_username === userName);
+  const otherGroups = groups.filter(group => group.owner_username !== userName);
+
   return (
-    <Container maxWidth="md">
-      <AppBar position="static">
+    <Box style={{ width: '100vw', backgroundColor: '#f0f0f0', minHeight: '100vh', padding: 0 }}>
+      <AppBar position="static" style={{ backgroundColor: '#fff', height: 80, justifyContent: 'center' }}>
         <Toolbar>
-          <Typography variant="h6" style={{ flexGrow: 1 }}>
+          <Typography variant="h6" style={{ flexGrow: 1, color: '#000' }}>
             Welcome, {userName}
           </Typography>
-          <Button color="inherit" onClick={handleLogout}>
+          <Button color="inherit" onClick={handleLogout} style={{ color: '#000' }}>
             Logout
           </Button>
         </Toolbar>
       </AppBar>
-      <Box display="flex" flexDirection="column" alignItems="center" justifyContent="center" minHeight="100vh" paddingTop={2}>
-        <Typography variant="h5" component="h2" gutterBottom>
+      <Divider />
+      <Box display="flex" flexDirection="column" alignItems="center" justifyContent="center" minHeight="calc(100vh - 80px)" paddingTop={2} paddingBottom={2}>
+        <Typography variant="h5" component="h2" gutterBottom style={{ color: '#333' }}>
           Your Groups
         </Typography>
         <Grid container spacing={2}>
-          {groups.map((group, index) => (
-            <Grid item xs={12} key={index}>
-              <Button
-                variant="contained"
-                fullWidth
-                onClick={() => handleGroupClick(group)}
-              >
-                <Box display="flex" flexDirection="column" alignItems="flex-start">
-                  <Typography variant="h6">{group.group_name}</Typography>
-                  <Typography variant="body2">Owner: {group.owner_username}</Typography>
-                  <Typography variant="body2">Writeable: {group.writeable ? 'Yes' : 'No'}</Typography>
+          <Grid item xs={12}>
+            <Typography variant="h6" style={{ color: '#333' }}>
+              Groups You Own
+            </Typography>
+            {ownedGroups.map((group, index) => (
+              <Paper elevation={3} style={{ width: '100%', marginTop: 8 }} key={index}>
+                <Box display="flex" alignItems="center">
+                  <Button
+                    variant="outlined"
+                    fullWidth
+                    onClick={() => handleGroupClick(group)}
+                    style={{ justifyContent: 'flex-start', backgroundColor: '#fff', color: '#000', textTransform: 'none', padding: '16px', borderColor: '#000' }}
+                  >
+                    <Box display="flex" flexDirection="column" alignItems="flex-start">
+                      <Typography variant="h6">{group.group_name}</Typography>
+                      <Typography variant="body2">Owner: {group.owner_username}</Typography>
+                      <Typography variant="body2">Writeable: {group.writeable ? 'Yes' : 'No'}</Typography>
+                    </Box>
+                  </Button>
+                  <IconButton onClick={() => openRenameDialog(group)} style={{ color: '#000' }}>
+                    <EditIcon />
+                  </IconButton>
+                  <IconButton onClick={() => handleDeleteGroup(group)} style={{ color: '#000' }}>
+                    <DeleteIcon />
+                  </IconButton>
                 </Box>
-              </Button>
-            </Grid>
-          ))}
+              </Paper>
+            ))}
+          </Grid>
+          <Grid item xs={12}>
+            <Typography variant="h6" style={{ color: '#333' }}>
+              Other Groups
+            </Typography>
+            {otherGroups.map((group, index) => (
+              <Paper elevation={3} style={{ width: '100%', marginTop: 8 }} key={index}>
+                <Button
+                  variant="outlined"
+                  fullWidth
+                  onClick={() => handleGroupClick(group)}
+                  style={{ justifyContent: 'flex-start', backgroundColor: '#fff', color: '#000', textTransform: 'none', padding: '16px', borderColor: '#000' }}
+                >
+                  <Box display="flex" flexDirection="column" alignItems="flex-start">
+                    <Typography variant="h6">{group.group_name}</Typography>
+                    <Typography variant="body2">Owner: {group.owner_username}</Typography>
+                    <Typography variant="body2">Writeable: {group.writeable ? 'Yes' : 'No'}</Typography>
+                  </Box>
+                </Button>
+              </Paper>
+            ))}
+          </Grid>
         </Grid>
         <Fab
           color="primary"
           aria-label="add"
-          style={{ position: 'absolute', bottom: 16, right: 16 }}
+          style={{ position: 'fixed', bottom: 16, right: 16, backgroundColor: '#000', color: '#fff' }}
           onClick={handleClickOpen}
         >
           <AddIcon />
@@ -167,8 +268,32 @@ const GroupSelectionPage = () => {
             </Button>
           </DialogActions>
         </Dialog>
+        <Dialog open={renameDialogOpen} onClose={closeRenameDialog}>
+          <DialogTitle>Rename Group</DialogTitle>
+          <DialogContent>
+            <DialogContentText>
+              Please enter the new group name.
+            </DialogContentText>
+            <TextField
+              autoFocus
+              margin="dense"
+              label="New Group Name"
+              fullWidth
+              value={newName}
+              onChange={(e) => setNewName(e.target.value)}
+            />
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={closeRenameDialog} color="secondary">
+              Cancel
+            </Button>
+            <Button onClick={handleRenameGroup} color="primary">
+              Rename
+            </Button>
+          </DialogActions>
+        </Dialog>
       </Box>
-    </Container>
+    </Box>
   );
 };
 
