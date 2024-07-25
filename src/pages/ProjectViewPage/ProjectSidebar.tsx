@@ -26,7 +26,6 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({ projects, tasks, onFocu
         ))}
       </List>
       <List subheader={<ListSubheader>Tasks</ListSubheader>}>
-        <Button variant="contained" color="primary" style={{ margin: '10px' }}>Add Task</Button>
         {tasks.map((task: any, index: number) => (
           <ListItem 
             button 
