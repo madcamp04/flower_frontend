@@ -52,7 +52,7 @@ const GroupSelectionPage = () => {
   const handleGroupClick = (group: Group) => {
     setGroupName(group.group_name);
     setGroupOwner(group.owner_username);
-    navigate(`/group/${encodeURIComponent(group.group_name)}`);
+    navigate(`/group`);
   };
 
   const handleAddGroup = () => {

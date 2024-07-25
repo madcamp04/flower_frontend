@@ -68,7 +68,7 @@ const App = () => {
             }
           />
           <Route
-            path="/group/:group_name"
+            path="/group"
             element={
               <ProtectedRoute>
                 <GroupViewPage />
