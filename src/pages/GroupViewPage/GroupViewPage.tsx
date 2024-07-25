@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Container, Typography, Paper, Button, AppBar, Toolbar, IconButton, Box } from '@mui/material';
+import { Container, Typography, Paper, Button, AppBar, Toolbar, IconButton, Box, Menu, MenuItem, TextField } from '@mui/material';
+import Autocomplete from '@mui/material/Autocomplete';
+import { usePopupState, bindTrigger, bindMenu } from 'material-ui-popup-state/hooks';
 import Header from './Header';
 import TimelineComponent from './TimelineComponent';
-import ViewButtons from './ViewButtons';
 import AddTaskDialog from './AddTaskDialog';
 import AddWorkerDialog from './AddWorkerDialog';
 import AddProjectDialog from './AddProjectDialog';
@@ -29,13 +30,17 @@ const GroupViewPage: React.FC = () => {
   const [timeline, setTimeline] = useState<any>(null);
   const [activeTags, setActiveTags] = useState<string[]>([]);
   const [allTags, setAllTags] = useState<string[]>([]);
+  const [activeProject, setActiveProject] = useState<string | null>(null);
 
   useEffect(() => {
     fetchTags();
     fetchWorkers();
-    fetchTasks();
     fetchProjects();
-  }, [activeTags]);
+  }, []);
+
+  useEffect(() => {
+    fetchTasks();
+  }, [activeTags, activeProject]);
 
   const fetchTags = async () => {
     const response = await fetch('/backend/api-group-view/tag-list', {
@@ -66,16 +71,31 @@ const GroupViewPage: React.FC = () => {
   };
 
   const fetchTasks = async () => {
-    const response = await fetch('/backend/api-group-view/task-list/by-tag-list', {
+    const isValidProject = projects.some(project => project.project_name === activeProject);
+
+    const url = isValidProject
+      ? '/backend/api-group-view/task-list/by-project-name'
+      : '/backend/api-group-view/task-list/by-tag-list';
+
+    const body = isValidProject
+      ? JSON.stringify({
+          owner_user_name: groupOwner,
+          group_name: groupName,
+          project_name: activeProject,
+        })
+      : JSON.stringify({
+          owner_user_name: groupOwner,
+          group_name: groupName,
+          tags: activeTags,
+        });
+
+    const response = await fetch(url, {
       method: 'POST',
       credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        owner_user_name: groupOwner,
-        group_name: groupName,
-        tags: activeTags,
-      }),
+      body,
     });
+
     const data = await response.json();
     console.log('fetchTasks', data);
     console.log('start_data', data.tasks.map((task: any) => parse(task.start_time, 'yyyy-MM-dd HH:mm:ss.S', new Date())));
@@ -195,34 +215,50 @@ const GroupViewPage: React.FC = () => {
 
   const projectNames = projects.map(project => project.project_name);
 
+  // Handler to update activeProject
+  const handleProjectChange = (event: any, value: string | null) => {
+    setActiveProject(value);
+  };
+
+  // Popup state for the "Create New" button
+  const popupState = usePopupState({ variant: 'popover', popupId: 'createNewMenu' });
+
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
-      <AppBar position="static">
-        <Toolbar>
-          <Typography variant="h6" sx={{ flexGrow: 1 }}>
-            Group: {groupName} | Owner: {groupOwner}
-          </Typography>
-          <Button onClick={() => setOpenAddTaskDialog(true)} variant="contained" color="primary">
-            Add Task
-          </Button>
-          <Button onClick={() => setOpenAddWorkerDialog(true)} variant="contained" color="secondary" sx={{ ml: 2 }}>
-            Add Worker
-          </Button>
-          <Button onClick={() => setOpenAddProjectDialog(true)} variant="contained" sx={{ ml: 2, backgroundColor: '#388e3c', color: 'white' }}>
-            Add Project
-          </Button>
-          <Button onClick={() => setOpenAddTagDialog(true)} variant="contained" sx={{ ml: 2, backgroundColor: '#ff9800', color: 'white' }}>
-            Add Tag
-          </Button>
+      <AppBar position="static" sx={{ backgroundColor: 'white', color: 'black', height: '80px', boxShadow: 'none', borderBottom: '1px solid gray' }}>
+        <Toolbar sx={{ height: '100%', display: 'flex', alignItems: 'center' }}>
+          <Box sx={{ flexGrow: 1 }}>
+            <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+              {groupName}
+            </Typography>
+            <Typography variant="subtitle1" sx={{ color: 'gray' }}>
+              {groupOwner}
+            </Typography>
+          </Box>
           <TagsSelector tags={allTags} activeTags={activeTags} setActiveTags={setActiveTags} />
-          <Button onClick={handleLogout} variant="contained" sx={{ ml: 2 }}>
+          <Autocomplete
+            options={projectNames}
+            renderInput={(params) => <TextField {...params} label="Select Project" variant="outlined" />}
+            onChange={handleProjectChange}
+            sx={{ width: 300, ml: 2 }}
+          />
+          <Button {...bindTrigger(popupState)} variant="outlined" sx={{ ml: 2, backgroundColor: 'white', color: 'black', border: '1px solid black', fontWeight: 'bold' }}>
+            Create New
+          </Button>
+          <Menu {...bindMenu(popupState)}>
+            <MenuItem onClick={() => { setOpenAddTaskDialog(true); popupState.close(); }}>Add Task</MenuItem>
+            <MenuItem onClick={() => { setOpenAddWorkerDialog(true); popupState.close(); }}>Add Worker</MenuItem>
+            <MenuItem onClick={() => { setOpenAddProjectDialog(true); popupState.close(); }}>Add Project</MenuItem>
+            <MenuItem onClick={() => { setOpenAddTagDialog(true); popupState.close(); }}>Add Tag</MenuItem>
+          </Menu>
+          <Button onClick={handleLogout} variant="outlined" sx={{ ml: 2, backgroundColor: 'white', color: 'black', border: '1px solid black', fontWeight: 'bold' }}>
             Logout
           </Button>
         </Toolbar>
       </AppBar>
+      <Box sx={{ height: '2px', backgroundColor: 'gray' }} />
       <Box sx={{ display: 'flex', flexGrow: 1 }}>
         <Box sx={{ width: '100%' }}>
-          <ViewButtons timeline={timeline} />
           <TimelineComponent
             tasks={tasks}
             workers={workers}

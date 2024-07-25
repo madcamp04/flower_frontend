@@ -8,8 +8,8 @@ interface TagsSelectorProps {
 }
 
 const TagsSelector: React.FC<TagsSelectorProps> = ({ tags, activeTags, setActiveTags }) => {
-  const handleChange = (event: React.ChangeEvent<{ value: string[] }>) => {
-    setActiveTags(event.target.value);
+  const handleChange = (event: React.ChangeEvent<{ value: unknown }>) => {
+    setActiveTags(event.target.value as string[]);
   };
 
   return (
@@ -25,6 +25,7 @@ const TagsSelector: React.FC<TagsSelectorProps> = ({ tags, activeTags, setActive
           ))}
         </div>
       )}
+      sx={{ width: 200 }} // Set the fixed width here
     >
       {tags.map((tag) => (
         <MenuItem key={tag} value={tag}>

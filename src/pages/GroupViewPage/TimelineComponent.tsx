@@ -4,6 +4,7 @@ import moment from 'moment';
 import 'vis-timeline/styles/vis-timeline-graph2d.min.css';
 import { Task, Worker } from './utils';
 import { useAppContext } from '../../context/AppContext';
+import { Button, Box } from '@mui/material';
 import './TimelineComponent.css';
 
 interface TimelineComponentProps {
@@ -20,6 +21,39 @@ const TimelineComponent: React.FC<TimelineComponentProps> = ({ tasks, workers, s
 
   const { setProjectName, setTaskName } = useAppContext();
 
+  const handleViewChange = (view: string) => {
+    if (timelineInstanceRef.current) {
+      let start, end, timeAxis;
+      switch (view) {
+        case 'week':
+          start = moment().startOf('week').toDate();
+          end = moment().startOf('week').add(1, 'week').toDate();
+          timeAxis = { scale: 'day', step: 1 };
+          timelineInstanceRef.current.setOptions({ showWeekScale: true });
+          break;
+        case 'month':
+          start = moment().startOf('month').toDate();
+          end = moment().endOf('month').toDate();
+          timeAxis = { scale: 'day', step: 7 };
+          timelineInstanceRef.current.setOptions({ showWeekScale: false });
+          break;
+        case 'quarter':
+          start = moment().startOf('quarter').toDate();
+          end = moment().endOf('quarter').toDate();
+          timeAxis = { scale: 'month', step: 1 };
+          timelineInstanceRef.current.setOptions({ showWeekScale: false });
+          break;
+        default:
+          start = moment().startOf('week').toDate();
+          end = moment().startOf('week').add(1, 'month').toDate();
+          timeAxis = { scale: 'day', step: 1 };
+          timelineInstanceRef.current.setOptions({ showWeekScale: true });
+      }
+      timelineInstanceRef.current.setOptions({ timeAxis });
+      timelineInstanceRef.current.setWindow(start, end, { animation: false });
+    }
+  };
+
   useEffect(() => {
     if (timelineRef.current) {
       const groups = new DataSet(
@@ -32,7 +66,9 @@ const TimelineComponent: React.FC<TimelineComponentProps> = ({ tasks, workers, s
       const items = new DataSet(
         tasks.map((task) => {
           const itemId = `${task.task_title}__SEP__${task.project_name}`;
-          const gradient = 'linear-gradient(90deg, #3CCC98, #1C9A6D)';
+          const gradient = 'linear-gradient(90deg, #03045e, #0077b6)';
+          // const gradient = 'linear-gradient(90deg, #3CCC98, #0077b6)';
+          // const gradient = 'linear-gradient(90deg, #3CCC98, #1C9A6D)';
           return {
             id: itemId,
             group: workers.findIndex(worker => worker.user_name === task.worker_name) + 1,
@@ -101,7 +137,64 @@ const TimelineComponent: React.FC<TimelineComponentProps> = ({ tasks, workers, s
     };
   }, []);
 
-  return <div ref={timelineRef} className="timeline-container"></div>;
+  return (
+    <div className="timeline-container">
+      <div ref={timelineRef} className="timeline-inner-container"></div>
+      <Box className="button-container" display="flex" justifyContent="space-between">
+        <Button
+          size="small"
+          onClick={() => handleViewChange('week')}
+          variant="outlined"
+          sx={{
+            borderColor: 'black',
+            backgroundColor: 'white',
+            color: 'black',
+            fontWeight: 'bold',
+            '&:hover': {
+              backgroundColor: 'black',
+              color: 'white',
+            }
+          }}
+        >
+          Week
+        </Button>
+        <Button
+          size="small"
+          onClick={() => handleViewChange('month')}
+          variant="outlined"
+          sx={{
+            borderColor: 'black',
+            backgroundColor: 'white',
+            color: 'black',
+            fontWeight: 'bold',
+            '&:hover': {
+              backgroundColor: 'black',
+              color: 'white',
+            }
+          }}
+        >
+          Month
+        </Button>
+        <Button
+          size="small"
+          onClick={() => handleViewChange('quarter')}
+          variant="outlined"
+          sx={{
+            borderColor: 'black',
+            backgroundColor: 'white',
+            color: 'black',
+            fontWeight: 'bold',
+            '&:hover': {
+              backgroundColor: 'black',
+              color: 'white',
+            }
+          }}
+        >
+          Quarter
+        </Button>
+      </Box>
+    </div>
+  );
 };
 
 export default TimelineComponent;
