@@ -7,12 +7,24 @@ const Login = () => {
   const [id, setId] = useState('');
   const [password, setPassword] = useState('');
   const [autoLogin, setAutoLogin] = useState(false);
+  const [errors, setErrors] = useState({ id: '', password: '' });
   const navigate = useNavigate();
   const location = useLocation();
   const { setUserName } = useAppContext();
   const from = location.state?.from?.pathname || '/group-selection';
 
+  const validateInputs = () => {
+    const idError = !id.trim() ? 'ID is required' : '';
+    const passwordError = !password.trim() ? 'Password is required' : '';
+    setErrors({ id: idError, password: passwordError });
+    return !(idError || passwordError);
+  };
+
   const handleLogin = () => {
+    if (!validateInputs()) {
+      return;
+    }
+
     fetch(`/backend/api-login/login`, {
       method: 'POST',
       credentials: 'include',
@@ -27,7 +39,7 @@ const Login = () => {
         setUserName(data.username);
         navigate(from, { replace: true });
       } else {
-        alert('Invalid credentials');
+        alert('Wrong Id or Password');
       }
     })
     .catch(() => {
@@ -61,6 +73,8 @@ const Login = () => {
           value={id}
           onChange={(e) => setId(e.target.value)}
           onKeyPress={handleKeyPress}
+          error={!!errors.id}
+          helperText={errors.id}
         />
         <TextField
           label="Password"
@@ -71,6 +85,8 @@ const Login = () => {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           onKeyPress={handleKeyPress}
+          error={!!errors.password}
+          helperText={errors.password}
         />
         <FormControlLabel
           control={<Checkbox checked={autoLogin} onChange={(e) => setAutoLogin(e.target.checked)} />}
