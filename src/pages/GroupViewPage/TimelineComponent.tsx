@@ -19,7 +19,85 @@ const TimelineComponent: React.FC<TimelineComponentProps> = ({ tasks, workers, s
   const timelineRef = useRef<HTMLDivElement | null>(null);
   const timelineInstanceRef = useRef<Timeline | null>(null);
 
-  const { setProjectName, setTaskName } = useAppContext();
+  const { setProjectName, setTaskName, groupName, groupOwner } = useAppContext();
+
+  const fetchProjects = async () => {
+    // Implement fetch projects logic
+  };
+
+  const fetchTasks = async () => {
+    // Implement fetch tasks logic
+  };
+
+  const fetchWorkers = async () => {
+    // Implement fetch workers logic
+  };
+
+  const formatDate = (date: Date) => {
+    return moment(date).format('YYYY-MM-DD HH:mm:ss');
+  };
+
+  const handleMove = async (item, callback) => {
+    const { id, group, start, end } = item;
+    const [taskTitle, projectName] = id.split('__SEP__');
+    const newWorkerName = workers[group - 1].user_name;
+    const task = tasks.find(t => t.task_title === taskTitle && t.project_name === projectName);
+    if (!task) return;
+
+    const response = await fetch('/backend/api-project-view/update-task', {
+      method: 'PATCH',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        owner_user_name: groupOwner,
+        group_name: groupName,
+        project_name: projectName,
+        task_title: task.task_title,
+        new_task_title: task.task_title,
+        new_worker_name: newWorkerName,
+        new_description: task.description,
+        new_start_time: formatDate(new Date(start)),
+        new_end_time: formatDate(new Date(end)),
+      }),
+    });
+
+    const data = await response.json();
+    if (data.success) {
+      await fetchProjects();
+      await fetchTasks();
+      await fetchWorkers();
+      callback(item);
+    } else {
+      console.error(data.message);
+    }
+  };
+
+  const handleRemove = async (item, callback) => {
+    const { id } = item;
+    const [taskTitle, projectName] = id.split('__SEP__');
+
+    const response = await fetch('/backend/api-project-view/delete-task', {
+      method: 'DELETE',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        owner_user_name: groupOwner,
+        group_name: groupName,
+        project_name: projectName,
+        task_title: taskTitle,
+      }),
+    });
+
+    const data = await response.json();
+    if (data.success) {
+      await fetchProjects();
+      await fetchTasks();
+      await fetchWorkers();
+      callback(item);
+    } else {
+      console.error(data.message);
+    }
+  };
 
   const handleViewChange = (view: string) => {
     if (timelineInstanceRef.current) {
@@ -67,8 +145,6 @@ const TimelineComponent: React.FC<TimelineComponentProps> = ({ tasks, workers, s
         tasks.map((task) => {
           const itemId = `${task.task_title}__SEP__${task.project_name}`;
           const gradient = 'linear-gradient(90deg, #03045e, #0077b6)';
-          // const gradient = 'linear-gradient(90deg, #3CCC98, #0077b6)';
-          // const gradient = 'linear-gradient(90deg, #3CCC98, #1C9A6D)';
           return {
             id: itemId,
             group: workers.findIndex(worker => worker.user_name === task.worker_name) + 1,
@@ -98,6 +174,12 @@ const TimelineComponent: React.FC<TimelineComponentProps> = ({ tasks, workers, s
           snap: (date) => moment(date).startOf('day').toDate(),
           moment: (date: moment.MomentInput) => moment(date).utcOffset(9),
           groupOrder: 'content',
+          onMove: (item, callback) => {
+            handleMove(item, callback);
+          },
+          onRemove: (item, callback) => {
+            handleRemove(item, callback);
+          }
         });
 
         timelineInstance.setOptions({
@@ -105,10 +187,6 @@ const TimelineComponent: React.FC<TimelineComponentProps> = ({ tasks, workers, s
           end: moment().startOf('week').add(1, 'week').toDate(),
           timeAxis: { scale: 'day', step: 1 },
           showWeekScale: true,
-        });
-
-        timelineInstance.on('rangechange', (props) => {
-          timelineInstance.setWindow(props.start, props.end, { animation: false });
         });
 
         timelineInstance.on('doubleClick', (props) => {

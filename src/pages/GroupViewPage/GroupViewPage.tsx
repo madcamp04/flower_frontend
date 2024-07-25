@@ -105,6 +105,7 @@ const GroupViewPage: React.FC = () => {
       project_name: task.project_name,
       tag_color: task.tag_colors,
     })));
+    console.log("tasks", tasks);
   };
 
   const fetchProjects = async () => {
@@ -139,6 +140,8 @@ const GroupViewPage: React.FC = () => {
 
   const handleTaskSubmit = async (newTask: { worker_name: string; task_title: string; start_date: string; end_date: string; description: string; project_name: string; tag_color: string[] }) => {
     console.log(groupOwner, groupName, newTask);
+    console.log("start_date", newTask.start_date);
+    console.log("end_date", newTask.end_date);
     const response = await fetch('/backend/api-project-view/add-task', {
       method: 'POST',
       credentials: 'include',
