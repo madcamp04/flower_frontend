@@ -3,8 +3,8 @@ import { DataSet, Timeline } from 'vis-timeline/standalone';
 import moment from 'moment';
 import 'vis-timeline/styles/vis-timeline-graph2d.min.css';
 import { Task, Worker } from './utils';
-import { useAppContext } from '../../context/AppContext'; // Import the context
-import './TimelineComponent.css'; // Import custom CSS
+import { useAppContext } from '../../context/AppContext';
+import './TimelineComponent.css';
 
 interface TimelineComponentProps {
   tasks: Task[];
@@ -18,7 +18,7 @@ const TimelineComponent: React.FC<TimelineComponentProps> = ({ tasks, workers, s
   const timelineRef = useRef<HTMLDivElement | null>(null);
   const timelineInstanceRef = useRef<Timeline | null>(null);
 
-  const { setProjectName, setTaskName } = useAppContext(); // Use the context
+  const { setProjectName, setTaskName } = useAppContext();
 
   useEffect(() => {
     if (timelineRef.current) {
@@ -28,23 +28,11 @@ const TimelineComponent: React.FC<TimelineComponentProps> = ({ tasks, workers, s
           content: worker.user_name,
         }))
       );
-      console.log("rendering timeline");
-      console.log("groups", groups);
-      console.log(tasks, workers);
 
       const items = new DataSet(
-        tasks.map(task => {
-          const itemId = `${task.task_title}__SEP__${task.project_name}`; // Unique identifier
-          console.log("task", task);
-          console.log({
-            id: itemId,
-            group: workers.findIndex(worker => worker.user_name === task.worker_name) + 1,
-            content: task.task_title, // Only display task_title
-            start: task.start_date,
-            end: task.end_date,
-            className: `vis-item`,
-            projectName: task.project_name,
-          });
+        tasks.map((task) => {
+          const itemId = `${task.task_title}__SEP__${task.project_name}`;
+          const gradient = 'linear-gradient(90deg, #3CCC98, #1C9A6D)';
           return {
             id: itemId,
             group: workers.findIndex(worker => worker.user_name === task.worker_name) + 1,
@@ -52,17 +40,16 @@ const TimelineComponent: React.FC<TimelineComponentProps> = ({ tasks, workers, s
             start: task.start_date,
             end: task.end_date,
             className: `vis-item`,
+            style: `background: ${gradient}; color: #FFFFFF; font-weight: 600; font-size: 14px;`,
             projectName: task.project_name,
           };
         })
       );
 
       if (timelineInstanceRef.current) {
-        console.log("updating timeline");
         timelineInstanceRef.current.setItems(items);
         timelineInstanceRef.current.setGroups(groups);
       } else {
-        console.log("creating timeline");
         const timelineInstance = new Timeline(timelineRef.current, items, groups, {
           stack: true,
           editable: { updateTime: true, updateGroup: true, remove: true },
@@ -74,7 +61,7 @@ const TimelineComponent: React.FC<TimelineComponentProps> = ({ tasks, workers, s
           verticalScroll: true,
           snap: (date) => moment(date).startOf('day').toDate(),
           moment: (date: moment.MomentInput) => moment(date).utcOffset(9),
-          groupOrder: 'content', // Order groups by content
+          groupOrder: 'content',
         });
 
         timelineInstance.setOptions({
@@ -91,8 +78,8 @@ const TimelineComponent: React.FC<TimelineComponentProps> = ({ tasks, workers, s
         timelineInstance.on('doubleClick', (props) => {
           if (props.item) {
             const [task_title, project_name] = props.item.split('__SEP__');
-            setTaskName(task_title); // Update taskName in context
-            setProjectName(project_name); // Update projectName in context
+            setTaskName(task_title);
+            setProjectName(project_name);
             navigate(`/project`);
           } else {
             alert('Double-clicked on an empty space or axis.');

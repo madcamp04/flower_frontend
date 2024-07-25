@@ -2,29 +2,62 @@
     width: 100%;
     height: 100%;
     position: relative;
-  }
-  
-  .vis-timeline {
+}
+
+.vis-timeline {
     height: 100%;
-  }
-  
-  /* Style the left panel (y-axis labels) */
-  .vis-left .vis-labelset .vis-label {
+}
+
+/* Style the left panel (y-axis labels) */
+.vis-left .vis-labelset .vis-label {
     font-weight: bold;
-    width: 150px; /* Adjust this value to expand the width */
-    background-color: white; /* Ensure y-axis labels have a white background */
+    width: 150px;
+    background-color: white;
     z-index: 10;
-    padding: 10px; /* Add padding for better spacing */
-    border-right: 1px solid #ddd; /* Optional: Add a right border for separation */
-  }
-  
-  /* Ensure text within labels is not cut off */
-  .vis-label .vis-inner {
+    padding: 10px;
+    border-right: 1px solid #ddd;
+}
+
+/* Ensure text within labels is not cut off and set a minimum height */
+.vis-label .vis-inner {
     overflow: visible;
-  }
-  
-  /* Apply background color to the main content area where items can be placed */
-  .vis-content {
-    background-color: #BBD1F6;
-  }
-  
+    min-height: 100px;
+}
+
+.vis-time-axis .vis-grid.vis-odd {
+    background-color: #f0f0f0; /* Light grey */
+}
+
+.vis-time-axis .vis-grid.vis-even {
+    background-color: #ffffff; /* White */
+}
+
+/* Style for date labels in the lower layer (e.g., day of week) */
+.vis-time-axis .vis-text.vis-minor {
+    font-size: 14px;  /* Set the desired font size for the lower layer */
+    font-weight: normal;  /* Set the desired font weight for the lower layer */
+    color: #666666;  /* Set the desired font color for the lower layer */
+}
+
+/* Style for date labels in the upper layer (e.g., month/year) */
+.vis-time-axis .vis-text.vis-major {
+    font-size: 16px;  /* Set the desired font size for the upper layer */
+    font-weight: bold;  /* Set the desired font weight for the upper layer */
+    color: #333333;  /* Set the desired font color for the upper layer */
+}
+
+/* Increase the height of the x-axis block */
+.vis-time-axis .vis-grid {
+    min-height: 50px; /* Set the desired height */
+}
+
+/* Adjust the line height and padding to ensure the labels fit within the new height */
+.vis-time-axis .vis-text.vis-minor {
+    min-height: 15px; /* Match the height for vertical centering in the lower layer */
+    padding-top: 15px; /* Adjust as necessary for spacing in the lower layer */
+}
+
+.vis-time-axis .vis-text.vis-major {
+    min-height: 15px; /* Match the height for vertical centering in the upper layer */
+    padding-top: 15px; /* Adjust as necessary for spacing in the upper layer */
+}
