@@ -7,16 +7,17 @@ import { parse } from 'date-fns';
 interface TaskDetailsProps {
   taskDetails: any;
   onSave: (updatedTask: any) => void;
-  onDelete: () => void;  // Add this line
+  onDelete: () => void;
   workers: { user_name: string; user_email: string; }[];
   isChanged: boolean;
 }
 
-const TaskDetails: React.FC<TaskDetailsProps> = ({ taskDetails, onSave, onDelete, workers, isChanged }) => {  // Add onDelete to the parameters
+const TaskDetails: React.FC<TaskDetailsProps> = ({ taskDetails, onSave, onDelete, workers, isChanged }) => {
   const [taskTitle, setTaskTitle] = useState('');
   const [workerName, setWorkerName] = useState('');
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
+  const [taskDescription, setTaskDescription] = useState('');
   const [localIsChanged, setLocalIsChanged] = useState(false);
 
   useEffect(() => {
@@ -25,6 +26,7 @@ const TaskDetails: React.FC<TaskDetailsProps> = ({ taskDetails, onSave, onDelete
       setWorkerName(taskDetails.worker_name || '');
       setStartDate(taskDetails.start_time ? parse(taskDetails.start_time, 'yyyy-MM-dd HH:mm:ss.S', new Date()) : null);
       setEndDate(taskDetails.end_time ? parse(taskDetails.end_time, 'yyyy-MM-dd HH:mm:ss.S', new Date()) : null);
+      setTaskDescription(taskDetails.description || '');
       setLocalIsChanged(false);
     }
   }, [taskDetails]);
@@ -35,14 +37,12 @@ const TaskDetails: React.FC<TaskDetailsProps> = ({ taskDetails, onSave, onDelete
 
   const handleSave = () => {
     if (startDate && endDate) {
-      const adjustedEndDate = new Date(endDate);
-      adjustedEndDate.setDate(adjustedEndDate.getDate() + 1);
       onSave({
         task_title: taskTitle,
         worker_name: workerName,
         start_time: formatDateTime(startDate),
-        end_time: formatDateTime(adjustedEndDate),
-        description: taskDetails.description,
+        end_time: formatDateTime(endDate),
+        taskDescription: taskDescription,
         project_name: taskDetails.project_name,
         tag_colors: taskDetails.tag_colors,
       });
@@ -103,6 +103,18 @@ const TaskDetails: React.FC<TaskDetailsProps> = ({ taskDetails, onSave, onDelete
           slotProps={{ textField: { fullWidth: true, margin: "normal" } }}
         />
       </LocalizationProvider>
+      <TextField
+        label="Description"
+        value={taskDescription}
+        onChange={(e) => {
+          setTaskDescription(e.target.value);
+          setLocalIsChanged(true);
+        }}
+        fullWidth
+        margin="normal"
+        multiline
+        rows={4}
+      />
       <Box display="flex" justifyContent="space-between">
         <Button 
           variant="contained" 

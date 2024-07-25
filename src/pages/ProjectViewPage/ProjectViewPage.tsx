@@ -19,7 +19,7 @@ const ProjectViewPage: React.FC = () => {
   const navigate = useNavigate(); // Use navigate hook for navigation
   const [projectDetails, setProjectDetails] = useState<any>({});
   const [taskDetails, setTaskDetails] = useState<any[]>([]);
-  const [markdownContent, setMarkdownContent] = useState<string>('');
+  const [projectDescription, setProjectDescription] = useState<string>('');
   const [workers, setWorkers] = useState<any[]>([]);
   const [existingTags, setExistingTags] = useState<string[]>([]);
   const [isChanged, setIsChanged] = useState(false);
@@ -32,18 +32,6 @@ const ProjectViewPage: React.FC = () => {
     fetchTags();
   }, [projectName]);
 
-  useEffect(() => {
-    if (!taskName || taskName === '') {
-      setMarkdownContent(projectDetails.project_description || '');
-      setIsChanged(false);
-    } else {
-      const task = taskDetails.find(task => task.task_title === taskName);
-      if (task) {
-        setMarkdownContent(task.description);
-        setIsChanged(false);
-      }
-    }
-  }, [projectDetails, taskDetails, taskName]);
 
   const fetchProjectDetails = async () => {
     const response = await fetch('/backend/api-project-view/project-detail', {
@@ -60,9 +48,7 @@ const ProjectViewPage: React.FC = () => {
     });
     const data = await response.json();
     setProjectDetails(data);
-    if (!taskName) {
-      setMarkdownContent(data.project_description || '');
-    }
+    setProjectDescription(data.project_description || '');
   };
 
   const fetchTaskDetails = async () => {
@@ -116,24 +102,34 @@ const ProjectViewPage: React.FC = () => {
 
   const handleSave = async (updatedDetails: any) => {
     let response;
-    if (!taskName || taskName === '') {
-      // Update project
-      response = await fetch('/backend/api-project-view/update-project', {
-        method: 'PATCH',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          owner_user_name: userName,
-          group_name: groupName,
-          project_name: projectName,
-          new_project_name: updatedDetails.project_name,
-          new_project_descr: updatedDetails.description,
-          new_tags: updatedDetails.tags,
-        }),
-      });
+    // Use original project data if updatedDetails are null
+    const newProjectName = updatedDetails.project_name || projectName;
+    const newTags = updatedDetails.tags || projectDetails.tags;
+  
+    // Update project
+    response = await fetch('/backend/api-project-view/update-project', {
+      method: 'PATCH',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        owner_user_name: userName,
+        group_name: groupName,
+        project_name: projectName,
+        new_project_name: newProjectName,
+        new_project_descr: projectDescription,
+        new_tags: newTags,
+      }),
+    });
+    const project_data = await response.json();
+    if (project_data.success) {
+      setProjectName(newProjectName);
     } else {
+      alert(`Save failed: ${project_data.message}`);
+    }
+  
+    if (taskName && taskName !== '') {
       // Update task
       response = await fetch('/backend/api-project-view/update-task', {
         method: 'PATCH',
@@ -148,31 +144,28 @@ const ProjectViewPage: React.FC = () => {
           task_title: taskName,
           new_task_title: updatedDetails.task_title,
           new_worker_name: updatedDetails.worker_name,
-          new_description: updatedDetails.description,
+          new_description: updatedDetails.taskDescription,
           new_start_time: updatedDetails.start_time,
           new_end_time: updatedDetails.end_time,
         }),
       });
-    }
-
-    const data = await response.json();
-    if (data.success) {
-      alert('Save successful');
-      if (!taskName || taskName === '') {
-        setProjectName(updatedDetails.project_name);
-      } else {
+  
+      const task_data = await response.json();
+      if (task_data.success) {
         setTaskName(updatedDetails.task_title);
+      } else {
+        alert(`Save failed: ${task_data.message}`);
       }
-      fetchProjectDetails();
-      fetchTaskDetails();
-    } else {
-      alert(`Save failed: ${data.message}`);
     }
+  
+    fetchProjectDetails();
+    fetchTaskDetails();
     setIsChanged(false);
   };
 
+
   const handleEditorChange = ({ html, text }: { html: string, text: string }) => {
-    setMarkdownContent(text);
+    setProjectDescription(text);
     setIsChanged(true);
   };
 
@@ -260,20 +253,20 @@ const ProjectViewPage: React.FC = () => {
         </div>
         <div>
           <Paper className="markdown-container">
-          <MdEditor
-            value={markdownContent}
-            style={{ height: '100%' }}
-            renderHTML={(text) => mdParser.render(text)}
-            onChange={handleEditorChange}
-            config={{ view: { menu: true, md: false, html: true }}}
-          />
+            <MdEditor
+              value={projectDescription}
+              style={{ height: '100%' }}
+              renderHTML={(text) => mdParser.render(text)}
+              onChange={handleEditorChange}
+              config={{ view: { menu: true, md: false, html: true }}}
+            />
           </Paper>
         </div>
         <div className="sidebar">
           {(!taskName || taskName === '') && (
             <ProjectDetails 
               projectDetails={projectDetails} 
-              onSave={(updatedDetails) => handleSave({ ...updatedDetails, description: markdownContent })} 
+              onSave={(updatedDetails) => handleSave({ ...updatedDetails })} 
               onDelete={handleProjectDelete}  // Pass the handler
               existingTags={existingTags}
               isChanged={isChanged}
@@ -282,7 +275,7 @@ const ProjectViewPage: React.FC = () => {
           {taskName && taskName !== '' && (
             <TaskDetails 
               taskDetails={taskDetails.find(task => task.task_title === taskName)} 
-              onSave={(updatedDetails) => handleSave({ ...updatedDetails, description: markdownContent })} 
+              onSave={(updatedDetails) => handleSave({ ...updatedDetails })} 
               onDelete={handleTaskDelete}  // Pass the handler
               workers={workers}
               isChanged={isChanged}
