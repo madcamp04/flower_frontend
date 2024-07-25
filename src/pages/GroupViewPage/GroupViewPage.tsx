@@ -218,7 +218,7 @@ const GroupViewPage: React.FC = () => {
   };
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh', backgroundColor: '#f0f0f0'}}>
       <Header
         groupName={groupName}
         groupOwner={groupOwner}

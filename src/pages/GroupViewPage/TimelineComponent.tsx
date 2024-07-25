@@ -137,6 +137,10 @@ const TimelineComponent: React.FC<TimelineComponentProps> = ({ tasks, workers, s
     };
   }, []);
 
+  if (workers.length === 0) {
+    return null;
+  }
+
   return (
     <div className="timeline-container">
       <div ref={timelineRef} className="timeline-inner-container"></div>

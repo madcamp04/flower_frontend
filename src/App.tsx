@@ -4,7 +4,7 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import Login from './pages/Login';
 import Register from './pages/Register';
-import GroupSelectionPage from './pages/GroupSelectionPage';
+import GroupSelectionPage from './pages/GroupSelectionPage/GroupSelectionPage';
 import GroupViewPage from './pages/GroupViewPage/GroupViewPage';
 import ProjectViewPage from './pages/ProjectViewPage/ProjectViewPage';
 import { AppProvider, useAppContext } from './context/AppContext';
