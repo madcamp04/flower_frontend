@@ -27,7 +27,22 @@ const Register = () => {
     return '';
   };
 
+  const handleIdChange = (e: { target: { value: React.SetStateAction<string>; }; }) => {
+    setId(e.target.value);
+    setUniqueCheck((prevCheck) => ({ ...prevCheck, id: false }));
+  };
+
+  const handleEmailChange = (e: { target: { value: React.SetStateAction<string>; }; }) => {
+    setEmail(e.target.value);
+    setUniqueCheck((prevCheck) => ({ ...prevCheck, email: false }));
+  };
+  
   const checkIdUniqueness = () => {
+    if (!id.trim()) {
+      setErrors((prevErrors) => ({ ...prevErrors, id: 'ID is required' }));
+      return;
+    }
+
     fetch(`/backend/api-login/check-username`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -50,6 +65,11 @@ const Register = () => {
   };
 
   const checkEmailUniqueness = () => {
+    if (!email.trim()) {
+      setErrors((prevErrors) => ({ ...prevErrors, email: 'Email is required' }));
+      return;
+    }
+    
     fetch(`/backend/api-login/check-email`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -74,8 +94,8 @@ const Register = () => {
   const handleRegister = () => {
     const passwordError = validatePassword(password);
     const confirmPasswordError = password !== confirmPassword ? 'Passwords do not match' : '';
-    const idError = id ? '' : 'ID is required';
-    const emailError = email ? '' : 'Email is required';
+    const idError = id.trim() ? '' : 'ID is required';
+    const emailError = email.trim() ? '' : 'Email is required';
 
     if (passwordError || confirmPasswordError || idError || emailError || !uniqueCheck.id || !uniqueCheck.email) {
       setErrors({
@@ -129,7 +149,7 @@ const Register = () => {
           margin="normal"
           fullWidth
           value={id}
-          onChange={(e) => setId(e.target.value)}
+          onChange={handleIdChange}
           error={!!errors.id}
           helperText={errors.id}
         />
@@ -143,7 +163,7 @@ const Register = () => {
           margin="normal"
           fullWidth
           value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          onChange={handleEmailChange}
           error={!!errors.email}
           helperText={errors.email}
         />
